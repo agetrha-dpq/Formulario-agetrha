@@ -722,12 +722,6 @@
         <div id="passwordError">Senha incorreta. Tente novamente.</div>
         <div class="debug-info" id="passwordDebug"></div>
         <button id="passwordSubmit">Acessar Formulário</button>
-        
-        <div style="margin-top: 20px; padding: 10px; background: #f8f9fa; border-radius: 5px;">
-            <p style="font-size: 12px; color: #666; margin: 0;">
-                <strong>Dica:</strong> Use Ctrl+Alt+P (após login) para acessar opções administrativas.
-            </p>
-        </div>
     </div>
 
     <!-- Modal para alterar senha -->
@@ -1060,7 +1054,7 @@
         const memberNumber = document.getElementById('memberNumber');
         const btnGerenciarUsuarios = document.getElementById('btnGerenciarUsuarios');
         
-        // ⭐⭐ FUNÇÃO DE VERIFICAÇÃO DE SENHA ATUALIZADA COM DEBUG ⭐⭐
+        // ⭐⭐ FUNÇÃO DE VERIFICAÇÃO DE SENHA SIMPLIFICADA ⭐⭐
         async function checkPassword() {
             const enteredPassword = passwordInput.value;
             passwordDebug.style.display = 'block';
@@ -1068,32 +1062,27 @@
             
             try {
                 const url = `${GOOGLE_SCRIPT_URL}?action=validatePassword&password=${encodeURIComponent(enteredPassword)}`;
-                passwordDebug.innerHTML += `<br>📡 URL: ${url}`;
                 
                 const response = await fetch(url);
                 const result = await response.json();
                 
-                passwordDebug.innerHTML += `<br>📄 Resposta: ${JSON.stringify(result)}`;
-                
                 if (result.valid) {
-                    passwordDebug.innerHTML += '<br>✅ Senha válida! Redirecionando...';
+                    passwordDebug.style.display = 'none';
                     sessionStorage.setItem('agetrhaAuthenticated', 'true');
                     sessionStorage.setItem('userRole', result.isAdmin ? 'admin' : 'user');
                     sessionStorage.setItem('userPassword', enteredPassword);
                     showMainContent();
                 } else {
-                    passwordDebug.innerHTML += '<br>❌ Senha inválida';
+                    passwordDebug.style.display = 'none';
                     passwordError.style.display = 'block';
                     passwordInput.value = '';
                     passwordInput.focus();
                 }
             } catch (error) {
                 console.error('Erro ao validar senha:', error);
-                passwordDebug.innerHTML += `<br>💥 Erro: ${error.message}`;
-                
+                passwordDebug.style.display = 'none';
                 // Fallback em caso de erro na conexão
                 if (enteredPassword === "AGETRHA2025-dpq.dabwc91") {
-                    passwordDebug.innerHTML += '<br>🔄 Usando fallback para senha master...';
                     sessionStorage.setItem('agetrhaAuthenticated', 'true');
                     sessionStorage.setItem('userRole', 'admin');
                     sessionStorage.setItem('userPassword', enteredPassword);
