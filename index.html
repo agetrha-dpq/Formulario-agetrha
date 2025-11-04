@@ -138,6 +138,83 @@
             margin: 10px 0;
             display: none;
         }
+
+        /* Modal de gerenciamento de usuários */
+        #userManagerModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        #userManagerModal .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            max-width: 800px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        #userManagerModal h3 {
+            color: #1a4e8e;
+            margin-bottom: 20px;
+        }
+        
+        #userManagerModal input, #userManagerModal select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        #userManagerModal button {
+            background-color: #1a4e8e;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+        }
+        
+        #userManagerModal button:hover {
+            background-color: #2a6cba;
+        }
+        
+        .user-section {
+            margin-bottom: 30px;
+            padding: 15px;
+            background: #f9fafc;
+            border-radius: 5px;
+        }
+        
+        .users-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        
+        .users-table th {
+            background: #1a4e8e;
+            color: white;
+            padding: 10px;
+            text-align: left;
+        }
+        
+        .users-table td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
         
         .container {
             max-width: 800px;
@@ -328,6 +405,7 @@
             display: flex;
             justify-content: center;
             gap: 15px;
+            flex-wrap: wrap;
         }
         
         button {
@@ -377,6 +455,14 @@
         .btn-clear:hover {
             background-color: #e15361;
         }
+
+        .btn-admin {
+            background-color: #6f42c1;
+        }
+        
+        .btn-admin:hover {
+            background-color: #7952b3;
+        }
         
         .member-number {
             background-color: #1a4e8e;
@@ -425,6 +511,16 @@
             pointer-events: none;
         }
         
+        .debug-info {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-size: 12px;
+            color: #666;
+            display: none;
+        }
+        
         /* Estilos para impressão/PDF - CORRIGIDOS */
         @media print {
             @page {
@@ -448,7 +544,7 @@
                 border: none;
             }
             
-            .buttons, .file-input, .error-message, .success-message, .category-error {
+            .buttons, .file-input, .error-message, .success-message, .category-error, .debug-info {
                 display: none !important;
             }
             
@@ -624,7 +720,14 @@
         <p>Para acessar o formulário de cadastro, insira a senha:</p>
         <input type="password" id="passwordInput" placeholder="Digite a senha">
         <div id="passwordError">Senha incorreta. Tente novamente.</div>
+        <div class="debug-info" id="passwordDebug"></div>
         <button id="passwordSubmit">Acessar Formulário</button>
+        
+        <div style="margin-top: 20px; padding: 10px; background: #f8f9fa; border-radius: 5px;">
+            <p style="font-size: 12px; color: #666; margin: 0;">
+                <strong>Dica:</strong> Use Ctrl+Alt+P (após login) para acessar opções administrativas.
+            </p>
+        </div>
     </div>
 
     <!-- Modal para alterar senha -->
@@ -638,6 +741,48 @@
             <div>
                 <button id="saveNewPassword">Salvar</button>
                 <button id="cancelPasswordChange">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de gerenciamento de usuários -->
+    <div id="userManagerModal">
+        <div class="modal-content">
+            <h3>👥 Gerenciador de Usuários</h3>
+            
+            <div class="user-section">
+                <h4>➕ Adicionar Novo Usuário</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 10px; align-items: end;">
+                    <div>
+                        <label>Nome do Usuário:</label>
+                        <input type="text" id="newUserName" placeholder="Nome completo">
+                    </div>
+                    <div>
+                        <label>Senha:</label>
+                        <input type="text" id="newUserPassword" placeholder="Senha de acesso">
+                    </div>
+                    <div>
+                        <label>Tipo:</label>
+                        <select id="newUserType">
+                            <option value="user">Usuário Normal</option>
+                            <option value="admin">Administrador</option>
+                        </select>
+                    </div>
+                    <button id="btnAddUser">Adicionar</button>
+                </div>
+            </div>
+            
+            <div>
+                <h4>📋 Usuários do Sistema</h4>
+                <div id="usersList">
+                    <div style="text-align: center; color: #666; padding: 20px;">
+                        Carregando lista de usuários...
+                    </div>
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 20px;">
+                <button onclick="closeUserManager()">Fechar</button>
             </div>
         </div>
     </div>
@@ -877,28 +1022,28 @@
                     <span>✓</span> Cadastrar
                 </button>
                 <button type="button" id="btnPDF" class="btn-pdf">
-                    <span>📄</span> Gerar em PDF
+                    <span>📄</span> Gerar PDF
                 </button>
                 <button type="button" id="btnLimpar" class="btn-clear">
-                    <span>🗑️</span> Limpar Formulário
+                    <span>🗑️</span> Limpar
+                </button>
+                <button type="button" id="btnGerenciarUsuarios" class="btn-admin" style="display: none;">
+                    <span>👥</span> Gerenciar Usuários
                 </button>
             </div>
         </form>
     </div>
 
     <script>
-        // ⭐⭐ CONFIGURAÇÃO DA SENHA ⭐⭐
-        // A senha padrão inicial
-        const DEFAULT_PASSWORD = "AGETRHA2025-dpq.dabwc91";
-        
-        // ⭐⭐ CONFIGURAÇÃO PRINCIPAL - URL ATUALIZADA ⭐⭐
-        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby0Ytxw4VS-OgBkO3Ya4cYHpJ96hH_bnGpS9fHoZyxGJ1-vY51GjU0RZ3-na6IGsWjUYw/exec';
+        // ⭐⭐ CONFIGURAÇÃO PRINCIPAL - NOVO URL ATUALIZADO ⭐⭐
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwhnHmFHF9s41aK62RUhdwUEt7nihxTO_Xd3Px5F7gNGtyIZpR5jEiZJSBwR-Upc6rJwg/exec';
         
         // Elementos DOM
         const passwordScreen = document.getElementById('passwordScreen');
         const passwordInput = document.getElementById('passwordInput');
         const passwordError = document.getElementById('passwordError');
         const passwordSubmit = document.getElementById('passwordSubmit');
+        const passwordDebug = document.getElementById('passwordDebug');
         const mainContent = document.getElementById('mainContent');
         const changePasswordModal = document.getElementById('changePasswordModal');
         const newPasswordInput = document.getElementById('newPassword');
@@ -913,15 +1058,52 @@
         const photoError = document.getElementById('photoError');
         const successMessage = document.getElementById('successMessage');
         const memberNumber = document.getElementById('memberNumber');
+        const btnGerenciarUsuarios = document.getElementById('btnGerenciarUsuarios');
         
-        // Função para obter a senha atual
-        function getCurrentPassword() {
-            return localStorage.getItem('agetrhaPassword') || DEFAULT_PASSWORD;
-        }
-        
-        // Função para salvar uma nova senha
-        function saveNewPassword(newPassword) {
-            localStorage.setItem('agetrhaPassword', newPassword);
+        // ⭐⭐ FUNÇÃO DE VERIFICAÇÃO DE SENHA ATUALIZADA COM DEBUG ⭐⭐
+        async function checkPassword() {
+            const enteredPassword = passwordInput.value;
+            passwordDebug.style.display = 'block';
+            passwordDebug.innerHTML = '🔍 Verificando senha...';
+            
+            try {
+                const url = `${GOOGLE_SCRIPT_URL}?action=validatePassword&password=${encodeURIComponent(enteredPassword)}`;
+                passwordDebug.innerHTML += `<br>📡 URL: ${url}`;
+                
+                const response = await fetch(url);
+                const result = await response.json();
+                
+                passwordDebug.innerHTML += `<br>📄 Resposta: ${JSON.stringify(result)}`;
+                
+                if (result.valid) {
+                    passwordDebug.innerHTML += '<br>✅ Senha válida! Redirecionando...';
+                    sessionStorage.setItem('agetrhaAuthenticated', 'true');
+                    sessionStorage.setItem('userRole', result.isAdmin ? 'admin' : 'user');
+                    sessionStorage.setItem('userPassword', enteredPassword);
+                    showMainContent();
+                } else {
+                    passwordDebug.innerHTML += '<br>❌ Senha inválida';
+                    passwordError.style.display = 'block';
+                    passwordInput.value = '';
+                    passwordInput.focus();
+                }
+            } catch (error) {
+                console.error('Erro ao validar senha:', error);
+                passwordDebug.innerHTML += `<br>💥 Erro: ${error.message}`;
+                
+                // Fallback em caso de erro na conexão
+                if (enteredPassword === "AGETRHA2025-dpq.dabwc91") {
+                    passwordDebug.innerHTML += '<br>🔄 Usando fallback para senha master...';
+                    sessionStorage.setItem('agetrhaAuthenticated', 'true');
+                    sessionStorage.setItem('userRole', 'admin');
+                    sessionStorage.setItem('userPassword', enteredPassword);
+                    showMainContent();
+                } else {
+                    passwordError.style.display = 'block';
+                    passwordInput.value = '';
+                    passwordInput.focus();
+                }
+            }
         }
         
         // Verificação de senha ao carregar a página
@@ -946,37 +1128,174 @@
             }
         });
         
-        function checkPassword() {
-            const currentPassword = getCurrentPassword();
-            if (passwordInput.value === currentPassword) {
-                // Senha correta
-                sessionStorage.setItem('agetrhaAuthenticated', 'true');
-                showMainContent();
-            } else {
-                // Senha incorreta
-                passwordError.style.display = 'block';
-                passwordInput.value = '';
-                passwordInput.focus();
-            }
-        }
-        
         function showMainContent() {
             passwordScreen.style.display = 'none';
             mainContent.style.display = 'block';
             memberNumber.textContent = "A ser gerado pelo sistema...";
+            
+            // Mostrar botão de gerenciar usuários apenas para administradores
+            if (sessionStorage.getItem('userRole') === 'admin') {
+                btnGerenciarUsuarios.style.display = 'flex';
+            }
         }
         
-        // ⭐⭐ SISTEMA DE ALTERAÇÃO DE SENHA ⭐⭐
-        // Atalho de teclado para abrir o modal de alteração de senha
-        document.addEventListener('keydown', function(e) {
-            // Ctrl+Alt+P para abrir o modal de alteração de senha
-            if (e.ctrlKey && e.altKey && e.key === 'p') {
-                e.preventDefault();
-                openChangePasswordModal();
+        // 👥 SISTEMA DE GERENCIAMENTO DE USUÁRIOS
+        function openUserManager() {
+            if (sessionStorage.getItem('userRole') !== 'admin') {
+                alert('Apenas administradores podem gerenciar usuários.');
+                return;
+            }
+            
+            document.getElementById('userManagerModal').style.display = 'flex';
+            loadUsersList();
+        }
+        
+        function closeUserManager() {
+            document.getElementById('userManagerModal').style.display = 'none';
+        }
+        
+        // Carregar lista de usuários
+        async function loadUsersList() {
+            const adminPassword = sessionStorage.getItem('userPassword');
+            
+            try {
+                const response = await fetch(`${GOOGLE_SCRIPT_URL}?action=listUsers&adminPassword=${encodeURIComponent(adminPassword)}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    displayUsersList(result.users);
+                } else {
+                    document.getElementById('usersList').innerHTML = `<div style="color: #dc3545; text-align: center;">Erro: ${result.message}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('usersList').innerHTML = `<div style="color: #dc3545; text-align: center;">Erro ao carregar usuários: ${error.message}</div>`;
+            }
+        }
+        
+        // Exibir lista de usuários
+        function displayUsersList(users) {
+            const usersList = document.getElementById('usersList');
+            
+            if (users.length === 0) {
+                usersList.innerHTML = '<div style="text-align: center; color: #666;">Nenhum usuário cadastrado.</div>';
+                return;
+            }
+            
+            let html = `
+                <table class="users-table">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Tipo</th>
+                            <th>Status</th>
+                            <th style="text-align: center;">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            users.forEach(user => {
+                const isActive = user.ativo === 'SIM';
+                html += `
+                    <tr>
+                        <td>${user.nome || 'Sem nome'}</td>
+                        <td>${user.tipo === 'admin' ? '👑 Administrador' : '👤 Usuário'}</td>
+                        <td>
+                            <span style="color: ${isActive ? '#28a745' : '#dc3545'}; font-weight: bold;">
+                                ${isActive ? '✅ ATIVO' : '❌ INATIVO'}
+                            </span>
+                        </td>
+                        <td style="text-align: center;">
+                            ${isActive ? 
+                                `<button onclick="toggleUser('${user.senha}', false)" style="background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-size: 12px;">
+                                    Bloquear
+                                </button>` :
+                                `<button onclick="toggleUser('${user.senha}', true)" style="background: #28a745; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-size: 12px;">
+                                    Ativar
+                                </button>`
+                            }
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody></table>';
+            usersList.innerHTML = html;
+        }
+        
+        // Ativar/Desativar usuário
+        async function toggleUser(userPassword, activate) {
+            const adminPassword = sessionStorage.getItem('userPassword');
+            const action = activate ? 'ativar' : 'bloquear';
+            
+            if (!confirm(`Tem certeza que deseja ${action} este usuário?`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${GOOGLE_SCRIPT_URL}?action=toggleUser&adminPassword=${encodeURIComponent(adminPassword)}&targetPassword=${encodeURIComponent(userPassword)}&activate=${activate}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert(result.message);
+                    loadUsersList(); // Recarregar lista
+                } else {
+                    alert('Erro: ' + result.message);
+                }
+            } catch (error) {
+                alert('Erro ao atualizar usuário: ' + error.message);
+            }
+        }
+        
+        // Adicionar novo usuário
+        document.getElementById('btnAddUser').addEventListener('click', async function() {
+            const adminPassword = sessionStorage.getItem('userPassword');
+            const userName = document.getElementById('newUserName').value;
+            const userPassword = document.getElementById('newUserPassword').value;
+            const userType = document.getElementById('newUserType').value;
+            
+            if (!userName || !userPassword) {
+                alert('Por favor, preencha todos os campos.');
+                return;
+            }
+            
+            const btn = this;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = 'Adicionando...';
+            btn.disabled = true;
+            
+            try {
+                const response = await fetch(`${GOOGLE_SCRIPT_URL}?action=addUser&adminPassword=${encodeURIComponent(adminPassword)}&newPassword=${encodeURIComponent(userPassword)}&userName=${encodeURIComponent(userName)}&userType=${encodeURIComponent(userType)}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert(result.message);
+                    // Limpar campos
+                    document.getElementById('newUserName').value = '';
+                    document.getElementById('newUserPassword').value = '';
+                    // Recarregar lista
+                    loadUsersList();
+                } else {
+                    alert('Erro: ' + result.message);
+                }
+            } catch (error) {
+                alert('Erro ao adicionar usuário: ' + error.message);
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
             }
         });
         
+        // Evento do botão Gerenciar Usuários
+        btnGerenciarUsuarios.addEventListener('click', openUserManager);
+        
+        // ⭐⭐ SISTEMA DE ALTERAÇÃO DE SENHA - APENAS PARA ADMINS ⭐⭐
         function openChangePasswordModal() {
+            if (sessionStorage.getItem('userRole') !== 'admin') {
+                alert('Apenas administradores podem alterar senhas.');
+                return;
+            }
+            
             changePasswordModal.style.display = 'flex';
             newPasswordInput.value = '';
             confirmPasswordInput.value = '';
@@ -987,6 +1306,15 @@
         function closeChangePasswordModal() {
             changePasswordModal.style.display = 'none';
         }
+        
+        // Atalho de teclado para abrir o modal de alteração de senha
+        document.addEventListener('keydown', function(e) {
+            // Ctrl+Alt+P para abrir o modal de alteração de senha
+            if (e.ctrlKey && e.altKey && e.key === 'p') {
+                e.preventDefault();
+                openChangePasswordModal();
+            }
+        });
         
         // Eventos dos botões do modal
         saveNewPasswordBtn.addEventListener('click', function() {
@@ -1006,16 +1334,13 @@
                 return;
             }
             
-            // Salvar a nova senha
-            saveNewPassword(newPassword);
-            
             // Mostrar mensagem de sucesso
             passwordChangeSuccess.style.display = 'block';
             
             // Fechar o modal após 2 segundos
             setTimeout(() => {
                 closeChangePasswordModal();
-                alert('Senha alterada com sucesso!');
+                alert('Funcionalidade de alteração de senha seria implementada aqui.');
             }, 2000);
         });
         
