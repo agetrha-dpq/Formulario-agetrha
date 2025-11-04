@@ -359,6 +359,14 @@
             box-shadow: 0 0 0 2px rgba(26, 78, 142, 0.2);
         }
         
+        /* Estilo para campos bloqueados/readonly */
+        .locked-field {
+            background-color: #f8f9fa !important;
+            border: 1px solid #ced4da !important;
+            color: #495057 !important;
+            cursor: not-allowed !important;
+        }
+        
         .checkbox-group {
             margin: 10px 0;
             display: flex;
@@ -1002,7 +1010,7 @@
                 
                 <div class="form-group">
                     <label for="cadastrado_por" class="required">Cadastrado por:</label>
-                    <input type="text" id="cadastrado_por" name="cadastrado_por" class="signature-field" required>
+                    <input type="text" id="cadastrado_por" name="cadastrado_por" class="signature-field locked-field" readonly required>
                     <div class="error-message" id="cadastradoPorError">Este campo é obrigatório</div>
                 </div>
             </div>
@@ -1030,7 +1038,7 @@
 
     <script>
         // ⭐⭐ CONFIGURAÇÃO PRINCIPAL - NOVO URL ATUALIZADO ⭐⭐
-        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwhnHmFHF9s41aK62RUhdwUEt7nihxTO_Xd3Px5F7gNGtyIZpR5jEiZJSBwR-Upc6rJwg/exec';
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzoHnUf1Y2vN12P8GMQmDwfjdSJY9TWhg1LQhmdgKzju3mcNX7QBxvs0UQsKBipRwHB/exec';
         
         // Elementos DOM
         const passwordScreen = document.getElementById('passwordScreen');
@@ -1053,8 +1061,12 @@
         const successMessage = document.getElementById('successMessage');
         const memberNumber = document.getElementById('memberNumber');
         const btnGerenciarUsuarios = document.getElementById('btnGerenciarUsuarios');
+        const cadastradoPorField = document.getElementById('cadastrado_por');
         
-        // ⭐⭐ FUNÇÃO DE VERIFICAÇÃO DE SENHA SIMPLIFICADA ⭐⭐
+        // Variável para armazenar o nome do usuário logado
+        let currentUserName = '';
+        
+        // ⭐⭐ FUNÇÃO DE VERIFICAÇÃO DE SENHA ATUALIZADA ⭐⭐
         async function checkPassword() {
             const enteredPassword = passwordInput.value;
             passwordDebug.style.display = 'block';
@@ -1071,6 +1083,8 @@
                     sessionStorage.setItem('agetrhaAuthenticated', 'true');
                     sessionStorage.setItem('userRole', result.isAdmin ? 'admin' : 'user');
                     sessionStorage.setItem('userPassword', enteredPassword);
+                    sessionStorage.setItem('userName', result.userName);
+                    currentUserName = result.userName;
                     showMainContent();
                 } else {
                     passwordDebug.style.display = 'none';
@@ -1086,6 +1100,8 @@
                     sessionStorage.setItem('agetrhaAuthenticated', 'true');
                     sessionStorage.setItem('userRole', 'admin');
                     sessionStorage.setItem('userPassword', enteredPassword);
+                    sessionStorage.setItem('userName', 'Administrador');
+                    currentUserName = 'Administrador';
                     showMainContent();
                 } else {
                     passwordError.style.display = 'block';
@@ -1105,6 +1121,7 @@
             
             // Verificar se já existe uma sessão ativa (após refresh)
             if (sessionStorage.getItem('agetrhaAuthenticated') === 'true') {
+                currentUserName = sessionStorage.getItem('userName') || '';
                 showMainContent();
             }
         });
@@ -1121,6 +1138,14 @@
             passwordScreen.style.display = 'none';
             mainContent.style.display = 'block';
             memberNumber.textContent = "A ser gerado pelo sistema...";
+            
+            // ⭐⭐ PREENCHER AUTOMATICAMENTE O CAMPO "CADASTRADO POR" ⭐⭐
+            if (currentUserName && cadastradoPorField) {
+                cadastradoPorField.value = currentUserName;
+                cadastradoPorField.classList.add('locked-field');
+                cadastradoPorField.setAttribute('readonly', 'true');
+                console.log('✅ Campo "Cadastrado por" preenchido automaticamente:', currentUserName);
+            }
             
             // Mostrar botão de gerenciar usuários apenas para administradores
             if (sessionStorage.getItem('userRole') === 'admin') {
@@ -1453,11 +1478,14 @@
             return dados;
         }
         
-        // ⭐⭐ FUNÇÃO DE ENVIO SIMPLIFICADA - USANDO XMLHttpRequest ⭐⭐
+        // ⭐⭐ FUNÇÃO DE ENVIO CORRIGIDA - USANDO POST ⭐⭐
         function enviarParaGoogleSheets(dados) {
             return new Promise((resolve, reject) => {
                 console.log('🔄 Iniciando envio para Google Sheets...');
                 console.log('📦 Dados a enviar:', dados);
+                
+                // Adicionar ação específica
+                dados.action = 'addMember';
                 
                 // Criar parâmetros URL encoded
                 const params = new URLSearchParams();
@@ -1481,14 +1509,8 @@
                                 const data = JSON.parse(xhr.responseText);
                                 resolve(data);
                             } catch (e) {
-                                console.warn('⚠️ Resposta não é JSON');
-                                // Mesmo sem JSON, assumir sucesso
-                                resolve({ 
-                                    success: true, 
-                                    data: { 
-                                        numeroMembro: 'AGETRHA-' + new Date().getFullYear() + '-' + Date.now().toString().slice(-4) 
-                                    } 
-                                });
+                                console.error('❌ Erro ao parsear JSON:', e);
+                                reject(new Error('Resposta inválida do servidor: ' + xhr.responseText));
                             }
                         } else {
                             reject(new Error('Erro HTTP: ' + xhr.status));
@@ -1500,7 +1522,11 @@
                     reject(new Error('Erro de rede'));
                 };
                 
-                console.log('📤 Enviando dados...');
+                xhr.ontimeout = function() {
+                    reject(new Error('Timeout na requisição'));
+                };
+                
+                console.log('📤 Enviando dados via POST...');
                 xhr.send(params.toString());
             });
         }
@@ -1578,9 +1604,19 @@
                 document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
                 document.getElementById('categoriaError').style.display = 'none';
                 photoUpload.classList.remove('error');
-                document.querySelectorAll('input').forEach(input => input.style.borderColor = '#ddd');
+                document.querySelectorAll('input').forEach(input => {
+                    if (input.id !== 'cadastrado_por') {
+                        input.style.borderColor = '#ddd';
+                    }
+                });
                 
                 memberNumber.textContent = "A ser gerado pelo sistema...";
+                
+                // ⭐⭐ RESTAURAR O NOME DO USUÁRIO NO CAMPO "CADASTRADO POR" ⭐⭐
+                if (currentUserName && cadastradoPorField) {
+                    cadastradoPorField.value = currentUserName;
+                    console.log('✅ Campo "Cadastrado por" restaurado após limpar:', currentUserName);
+                }
             }
         });
         
@@ -1605,6 +1641,21 @@
             radio.addEventListener('change', function() {
                 document.getElementById('categoriaError').style.display = 'none';
             });
+        });
+        
+        // ⭐⭐ BLOQUEAR EDIÇÃO MANUAL DO CAMPO "CADASTRADO POR" ⭐⭐
+        cadastradoPorField.addEventListener('mousedown', function(e) {
+            e.preventDefault();
+            return false;
+        });
+        
+        cadastradoPorField.addEventListener('keydown', function(e) {
+            e.preventDefault();
+            return false;
+        });
+        
+        cadastradoPorField.addEventListener('focus', function(e) {
+            this.blur();
         });
     </script>
 </body>
