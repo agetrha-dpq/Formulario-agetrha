@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FORMULÁRIO DE CANDIDATURA – AGETRHA</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        
+        body {
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Tela de boas-vindas */
+        #welcomeScreen {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+        
+        #welcomeScreen h2 {
+            color: #5a9cf8;
+            margin-bottom: 20px;
+        }
+        
+        #welcomeScreen p {
+            margin-bottom: 30px;
+            font-size: 16px;
+            line-height: 1.5;
+            color: #555;
+        }
+        
+        #enterButton {
+            background-color: #5a9cf8;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background-color 0.3s;
+            width: 100%;
+        }
+        
+        #enterButton:hover {
+            background-color: #4a8be5;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            position: relative;
+            display: none; /* Inicialmente oculto */
+        }
+        
+        .header {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #5a9cf8;
+        }
+        
+        .photo-section {
+            width: 150px;
+            margin-right: 20px;
+            text-align: center;
+        }
+        
+        .photo-upload {
+            width: 120px;
+            height: 150px;
+            border: 2px dashed #ccc;
+            border-radius: 5px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            margin-bottom: 10px;
+            position: relative;
+            overflow: hidden;
+            background-color: #f9f9f9;
+        }
+        
+        .photo-upload:hover {
+            border-color: #5a9cf8;
+            background-color: #f0f5ff;
+        }
+        
+        .photo-preview {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+        }
+        
+        .photo-icon {
+            font-size: 24px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .photo-text {
+            font-size: 12px;
+            color: #666;
+            text-align: center;
+            padding: 0 5px;
+        }
+        
+        .header-content {
+            flex: 1;
+            margin-top: 70px;
+        }
+
+        .header h1 {
+            color: #5a9cf8;
+            margin-bottom: 8px;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header h2 {
+            color: #5a9cf8;
+            font-size: 16px;
+            margin-top: 0;
+            font-weight: 600;
+        }
+
+        .header p {
+            color: #555;
+            margin-top: 5px;
+            font-size: 13px;
+        }
+        
+        .section {
+            margin-bottom: 25px;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: #f9fafc;
+            border-left: 4px solid #5a9cf8;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            color: #5a9cf8;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #444;
+        }
+        
+        .required::after {
+            content: " *";
+            color: #e74c3c;
+        }
+        
+        input[type="text"], input[type="date"], input[type="email"], input[type="tel"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 15px;
+            transition: border 0.3s;
+        }
+        
+        input[type="text"]:focus, input[type="date"]:focus, input[type="email"]:focus, input[type="tel"]:focus {
+            border-color: #5a9cf8;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(90, 156, 248, 0.2);
+        }
+        
+        /* Estilo para campos bloqueados/readonly */
+        .locked-field {
+            background-color: #f8f9fa !important;
+            border: 1px solid #ced4da !important;
+            color: #495057 !important;
+            cursor: not-allowed !important;
+        }
+        
+        .checkbox-group {
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+        }
+        
+        .checkbox-group label {
+            display: inline-block;
+            margin-left: 8px;
+            font-weight: normal;
+            cursor: pointer;
+        }
+        
+        .checkbox-group input {
+            cursor: pointer;
+            width: 18px;
+            height: 18px;
+        }
+        
+        .checkbox-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 10px 0;
+        }
+        
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            width: calc(50% - 10px);
+        }
+        
+        .signature-field {
+            display: inline-block;
+            width: 250px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 5px;
+            margin-right: 20px;
+        }
+        
+        .buttons {
+            text-align: center;
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            background-color: #5a9cf8;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background-color 0.3s, transform 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        button:hover {
+            background-color: #4a8be5;
+            transform: translateY(-2px);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .btn-submit {
+            background-color: #28a745;
+        }
+        
+        .btn-submit:hover {
+            background-color: #34ce57;
+        }
+        
+        .btn-pdf {
+            background-color: #5a9cf8;
+        }
+        
+        .btn-pdf:hover {
+            background-color: #4a8be5;
+        }
+        
+        .btn-clear {
+            background-color: #dc3545;
+        }
+        
+        .btn-clear:hover {
+            background-color: #e15361;
+        }
+        
+        .member-number {
+            background-color: #5a9cf8;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 18px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .error-message {
+            color: #e74c3c;
+            font-size: 12px;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        .photo-upload.error {
+            border-color: #e74c3c;
+            background-color: #ffeaea;
+        }
+        
+        .category-error {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-top: 10px;
+            display: none;
+        }
+        
+        .success-message {
+            color: #28a745;
+            font-size: 16px;
+            text-align: center;
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f0fff4;
+            border-radius: 5px;
+            display: none;
+        }
+        
+        .loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+        
+        /* Estilos para impressão/PDF */
+        @media print {
+            @page {
+                margin: 0.5cm;
+                size: A4;
+            }
+            
+            body {
+                background: white !important;
+                padding: 0;
+                margin: 0;
+                font-size: 12pt;
+                line-height: 1.4;
+            }
+            
+            .container {
+                box-shadow: none;
+                padding: 15px;
+                max-width: 100%;
+                margin: 0;
+                border: none;
+            }
+            
+            .buttons, .file-input, .error-message, .success-message, .category-error {
+                display: none !important;
+            }
+            
+            .member-number {
+                background-color: #5a9cf8 !important;
+                -webkit-print-color-adjust: exact;
+                color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            
+            .section {
+                break-inside: avoid;
+                page-break-inside: avoid;
+                margin-bottom: 20px;
+                padding: 15px;
+                border-left: 4px solid #5a9cf8;
+                background-color: #f9fafc;
+                box-shadow: none;
+            }
+            
+            .header {
+                display: block;
+                position: relative;
+                margin-bottom: 20px;
+                padding-bottom: 15px;
+            }
+            
+            .photo-section {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 120px;
+                margin: 0;
+            }
+            
+            .photo-upload {
+                width: 100px;
+                height: 125px;
+                border: 1px solid #ccc;
+                background: white;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            
+            .photo-preview {
+                display: block !important;
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+            
+            .photo-icon, .photo-text {
+                display: none !important;
+            }
+            
+            .header-content {
+                margin-top: 0;
+                padding-left: 130px;
+                padding-right: 130px;
+            }
+            
+            .header h1 {
+                font-size: 16pt;
+                margin-bottom: 5px;
+            }
+            
+            .header h2 {
+                font-size: 12pt;
+            }
+            
+            .header p {
+                font-size: 10pt;
+            }
+            
+            .section-title {
+                font-size: 14pt;
+                margin-bottom: 10px;
+            }
+            
+            .form-group {
+                margin-bottom: 10px;
+            }
+            
+            label {
+                font-size: 11pt;
+                margin-bottom: 3px;
+            }
+            
+            input[type="text"], input[type="date"], input[type="email"], input[type="tel"] {
+                padding: 6px 8px;
+                font-size: 11pt;
+                border: 1px solid #999;
+                background: white;
+            }
+            
+            .checkbox-group, .checkbox-item {
+                margin: 5px 0;
+            }
+            
+            .checkbox-group label, .checkbox-item label {
+                font-size: 10pt;
+                font-weight: normal;
+            }
+            
+            .signature-field {
+                width: 200px;
+                margin-right: 15px;
+            }
+            
+            .header img {
+                position: absolute;
+                top: 0;
+                right: 0;
+                width: 100px;
+                height: auto;
+            }
+            
+            .section {
+                page-break-inside: avoid;
+            }
+            
+            h1, h2, h3 {
+                page-break-after: avoid;
+            }
+            
+            input {
+                -webkit-print-color-adjust: exact;
+                color-adjust: exact;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .header {
+                flex-direction: column;
+            }
+            
+            .photo-section {
+                width: 100%;
+                margin-right: 0;
+                margin-bottom: 15px;
+            }
+            
+            .photo-upload {
+                width: 100px;
+                height: 125px;
+                margin: 0 auto 10px;
+            }
+            
+            .checkbox-item {
+                width: 100%;
+            }
+            
+            .signature-field {
+                width: 100%;
+                margin-bottom: 15px;
+            }
+            
+            .buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Tela de boas-vindas -->
+    <div id="welcomeScreen">
+        <h2>FORMULÁRIO DE CANDIDATURA – AGETRHA</h2>
+        <p>Preencha o Formulário para se candidatar. Após o envio da candidatura, não se esqueça de gerar o seu PDF</p>
+        <button id="enterButton">ENTRAR</button>
+    </div>
+
+    <!-- Conteúdo principal (inicialmente oculto) -->
+    <div class="container" id="mainContent">
+        
+        <div class="header">
+            <!-- Logotipo real -->
+            <img src="https://i.postimg.cc/DyKZTbYq/Logotipo.jpg" alt="Logotipo AGETRHA" 
+                 style="position: absolute; top: 20px; right: 30px; width: 130px; height: auto;">
+
+            <div class="photo-section">
+                <div class="photo-upload" id="photoUpload">
+                    <div class="photo-icon">📷</div>
+                    <div class="photo-text">Clique para adicionar foto tipo passe</div>
+                    <img id="photoPreview" class="photo-preview" alt="Preview da foto">
+                </div>
+                <input type="file" id="fileInput" class="file-input" accept="image/*" style="display: none;">
+                <div class="photo-text">(3.5x4.5 cm)</div>
+                <div class="error-message" id="photoError">Foto é obrigatória</div>
+            </div>
+
+            <div class="header-content">
+                <h1>🟦 FORMULÁRIO DE CANDIDATURA – AGETRHA</h1>
+                <h2>Associação dos Gestores e Técnicos de Recursos Humanos de Angola</h2>
+                <p><strong>Sede Nacional:</strong> Ulengo Center, Entrada 2, 2.º andar – Cidade Universitária, Luanda</p>
+            </div>
+        </div>
+
+        <form id="memberForm">
+            <div class="member-number" id="memberNumberDisplay">
+                Código de inscrição: <span id="memberNumber">A ser gerado pelo sistema...</span>
+            </div>
+            
+            <div class="section">
+                <div class="section-title">🔹 1. DADOS PESSOAIS</div>
+                
+                <div class="form-group">
+                    <label for="nome" class="required">Nome Completo:</label>
+                    <input type="text" id="nome" name="nome" required>
+                    <div class="error-message" id="nomeError">Este campo é obrigatório</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="nascimento" class="required">Data de Nascimento:</label>
+                    <input type="date" id="nascimento" name="nascimento" required>
+                    <div class="error-message" id="nascimentoError">Este campo é obrigatório</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="bi" class="required">Bilhete de Identidade / Passaporte n.º:</label>
+                    <input type="text" id="bi" name="bi" required>
+                    <div class="error-message" id="biError">Este campo é obrigatório</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="nif">NIF:</label>
+                    <input type="text" id="nif" name="nif">
+                </div>
+                
+                <div class="form-group">
+                    <label for="nacionalidade" class="required">Nacionalidade:</label>
+                    <input type="text" id="nacionalidade" name="nacionalidade" required>
+                    <div class="error-message" id="nacionalidadeError">Este campo é obrigatório</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="endereco">Endereço Residencial:</label>
+                    <input type="text" id="endereco" name="endereco">
+                </div>
+                
+                <div class="form-group">
+                    <label for="telefone" class="required">Telefone/Whatsapp:</label>
+                    <input type="tel" id="telefone" name="telefone" pattern="[0-9]{9,}" title="Por favor, insira apenas números" required>
+                    <div class="error-message" id="telefoneError">Este campo é obrigatório e deve conter apenas números</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">E-mail:</label>
+                    <input type="email" id="email" name="email">
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="section-title">🔹 2. DADOS PROFISSIONAIS</div>
+                
+                <div class="form-group">
+                    <label for="empresa">Instituição / Empresa:</label>
+                    <input type="text" id="empresa" name="empresa">
+                </div>
+                
+                <div class="form-group">
+                    <label for="cargo">Cargo ou Função:</label>
+                    <input type="text" id="cargo" name="cargo">
+                </div>
+                
+                <div class="form-group">
+                    <label for="area">Área de Atuação:</label>
+                    <input type="text" id="area" name="area">
+                </div>
+                
+                <div class="form-group">
+                    <label for="endereco_profissional">Endereço Profissional:</label>
+                    <input type="text" id="endereco_profissional" name="endereco_profissional">
+                </div>
+                
+                <div class="form-group">
+                    <label for="contato_profissional">Telefone / E-mail Profissional:</label>
+                    <input type="text" id="contato_profissional" name="contato_profissional">
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="section-title">🔹 3. QUALIFICAÇÃO ACADÉMICA</div>
+                
+                <div class="checkbox-container">
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="ensino_medio" name="qualificacao" value="Ensino Médio" required>
+                        <label for="ensino_medio" class="required">Ensino Médio</label>
+                    </div>
+                    
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="licenciatura" name="qualificacao" value="Licenciatura" required>
+                        <label for="licenciatura" class="required">Licenciatura</label>
+                    </div>
+                    
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="pos_graduacao" name="qualificacao" value="Pós-Graduação" required>
+                        <label for="pos_graduacao" class="required">Pós-Graduação</label>
+                    </div>
+                    
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="mestrado" name="qualificacao" value="Mestrado" required>
+                        <label for="mestrado" class="required">Mestrado</label>
+                    </div>
+                    
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="doutoramento" name="qualificacao" value="Doutoramento" required>
+                        <label for="doutoramento" class="required">Doutoramento</label>
+                    </div>
+                </div>
+                <div class="error-message" id="qualificacaoError">Selecione pelo menos uma qualificação acadêmica</div>
+                
+                <div class="form-group">
+                    <label for="area_formacao">Área de Formação:</label>
+                    <input type="text" id="area_formacao" name="area_formacao">
+                </div>
+                
+                <div class="form-group">
+                    <label for="instituicao_ensino">Instituição de Ensino:</label>
+                    <input type="text" id="instituicao_ensino" name="instituicao_ensino">
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="section-title">🔹 4. CATEGORIA DE MEMBRO</div>
+                <p class="required">Marque apenas <strong>uma</strong> opção:</p>
+                
+                <div class="checkbox-group">
+                    <input type="radio" id="efectivo" name="categoria" value="Sócio Efectivo" required>
+                    <label for="efectivo" class="required">Sócio <strong>Efectivo</strong></label>
+                </div>
+                
+                <div class="checkbox-group">
+                    <input type="radio" id="colectivo" name="categoria" value="Sócio Colectivo" required>
+                    <label for="colectivo" class="required">Sócio <strong>Colectivo</strong></label>
+                </div>
+                
+                <div class="checkbox-group">
+                    <input type="radio" id="correspondente" name="categoria" value="Sócio Correspondente" required>
+                    <label for="correspondente" class="required">Sócio <strong>Correspondente</strong></label>
+                </div>
+                
+                <div class="checkbox-group">
+                    <input type="radio" id="aderente" name="categoria" value="Sócio Aderente" required>
+                    <label for="aderente" class="required">Sócio <strong>Aderente</strong></label>
+                </div>
+                
+                <div class="checkbox-group">
+                    <input type="radio" id="honorario" name="categoria" value="Sócio Honorário" required>
+                    <label for="honorario" class="required">Sócio <strong>Honorário</strong></label>
+                </div>
+                
+                <div class="category-error" id="categoriaError">Selecione uma categoria de membro</div>
+            </div>
+            
+            <div class="section">
+                <div class="section-title">🔹 5. DOCUMENTOS ANEXOS QUE ENVIAREI</div>
+                
+                <div class="checkbox-group">
+                    <input type="checkbox" id="doc_bi" name="documentos" value="Cópia do Bilhete de Identidade / Passaporte" required>
+                    <label for="doc_bi" class="required">Cópia do Bilhete de Identidade / Passaporte</label>
+                </div>
+                
+                <div class="checkbox-group">
+                    <input type="checkbox" id="doc_cv" name="documentos" value="Curriculum Vitae resumido" required>
+                    <label for="doc_cv" class="required">Curriculum Vitae resumido</label>
+                </div>
+                
+                <div class="checkbox-group">
+                    <input type="checkbox" id="doc_certificado" name="documentos" value="Declaração Escolar / Declaração de Serviço" required>
+                    <label for="doc_certificado" class="required">Declaração Escolar / Declaração de Serviço</label>
+                </div>
+                
+                <div class="checkbox-group">
+                    <input type="checkbox" id="doc_pagamento" name="documentos" value="Comprovativo de pagamento da joia de inscrição" required>
+                    <label for="doc_pagamento" class="required">Comprovativo de pagamento da <strong>joia de inscrição</strong></label>
+                </div>
+                
+                <div class="checkbox-group">
+                    <input type="checkbox" id="doc_foto" name="documentos" value="Fotografia tipo passe" required>
+                    <label for="doc_foto" class="required">Fotografia tipo passe</label>
+                </div>
+                <div class="error-message" id="documentosError">Todos os documentos são obrigatórios</div>
+            </div>
+            
+            <div class="section">
+                <div class="section-title">🔹 6. REGISTO DE CADASTRAMENTO</div>
+                
+                <div class="form-group">
+                    <label for="data_cadastro" class="required">Data de cadastro:</label>
+                    <input type="date" id="data_cadastro" name="data_cadastro" class="locked-field" readonly required>
+                    <div class="error-message" id="dataCadastroError">Este campo é obrigatório</div>
+                </div>
+            </div>
+            
+            <div class="success-message" id="successMessage">
+                INSCRIÇÃO FEITA COM SUCESSO! A equipa AGETRHA entrará em contacto. Obrigado
+            </div>
+            
+            <div class="buttons">
+                <button type="button" id="btnCadastrar" class="btn-submit">
+                    <span>✓</span> ENVIAR CANDIDATURA
+                </button>
+                <button type="button" id="btnPDF" class="btn-pdf">
+                    <span>📄</span> Gerar PDF
+                </button>
+                <button type="button" id="btnLimpar" class="btn-clear">
+                    <span>🗑️</span> Limpar
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // ⭐⭐ CONFIGURAÇÃO PRINCIPAL - NOVO URL ATUALIZADO ⭐⭐
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzYSkz5DS4yr7Pd2YgIUvjXY7kj_vBXa5fggmor0RMIALpfE8nfL7n6irWjut4hW3QUMQ/exec';
+        
+        // Elementos DOM
+        const welcomeScreen = document.getElementById('welcomeScreen');
+        const enterButton = document.getElementById('enterButton');
+        const mainContent = document.getElementById('mainContent');
+        
+        const photoUpload = document.getElementById('photoUpload');
+        const fileInput = document.getElementById('fileInput');
+        const photoPreview = document.getElementById('photoPreview');
+        const photoError = document.getElementById('photoError');
+        const successMessage = document.getElementById('successMessage');
+        const memberNumber = document.getElementById('memberNumber');
+        const dataCadastroField = document.getElementById('data_cadastro');
+        
+        // Definir data atual automaticamente
+        function setCurrentDate() {
+            const today = new Date();
+            const formattedDate = today.toISOString().split('T')[0];
+            dataCadastroField.value = formattedDate;
+        }
+        
+        // Mostrar conteúdo principal ao clicar no botão ENTRAR
+        enterButton.addEventListener('click', function() {
+            welcomeScreen.style.display = 'none';
+            mainContent.style.display = 'block';
+            memberNumber.textContent = "A ser gerado pelo sistema...";
+            setCurrentDate();
+        });
+        
+        // Upload de foto
+        photoUpload.addEventListener('click', () => fileInput.click());
+        
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    photoPreview.src = e.target.result;
+                    photoPreview.style.display = 'block';
+                    photoUpload.querySelector('.photo-icon').style.display = 'none';
+                    photoUpload.querySelector('.photo-text').style.display = 'none';
+                    photoUpload.classList.remove('error');
+                    photoError.style.display = 'none';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        // Validação do formulário
+        function validarFormulario() {
+            let valido = true;
+            const camposObrigatorios = [
+                { id: 'nome', errorId: 'nomeError' },
+                { id: 'nascimento', errorId: 'nascimentoError' },
+                { id: 'bi', errorId: 'biError' },
+                { id: 'nacionalidade', errorId: 'nacionalidadeError' },
+                { id: 'telefone', errorId: 'telefoneError' },
+                { id: 'data_cadastro', errorId: 'dataCadastroError' }
+            ];
+            
+            camposObrigatorios.forEach(campo => {
+                const elemento = document.getElementById(campo.id);
+                const erro = document.getElementById(campo.errorId);
+                if (elemento && !elemento.value) {
+                    elemento.style.borderColor = '#e74c3c';
+                    erro.style.display = 'block';
+                    valido = false;
+                } else if (elemento) {
+                    elemento.style.borderColor = '#ddd';
+                    erro.style.display = 'none';
+                }
+            });
+            
+            // Validação telefone (apenas números)
+            const telefone = document.getElementById('telefone');
+            const telefoneError = document.getElementById('telefoneError');
+            if (telefone.value && !/^\d+$/.test(telefone.value)) {
+                telefone.style.borderColor = '#e74c3c';
+                telefoneError.textContent = 'Por favor, insira apenas números';
+                telefoneError.style.display = 'block';
+                valido = false;
+            }
+            
+            // Validação categoria (obrigatória)
+            const categoriaSelecionada = document.querySelector('input[name="categoria"]:checked');
+            const categoriaError = document.getElementById('categoriaError');
+            if (!categoriaSelecionada) {
+                categoriaError.style.display = 'block';
+                valido = false;
+            } else {
+                categoriaError.style.display = 'none';
+            }
+            
+            // Validação qualificações acadêmicas
+            const qualificacoesSelecionadas = document.querySelectorAll('input[name="qualificacao"]:checked');
+            const qualificacaoError = document.getElementById('qualificacaoError');
+            if (qualificacoesSelecionadas.length === 0) {
+                qualificacaoError.style.display = 'block';
+                valido = false;
+            } else {
+                qualificacaoError.style.display = 'none';
+            }
+            
+            // Validação documentos anexos
+            const documentosSelecionados = document.querySelectorAll('input[name="documentos"]:checked');
+            const documentosError = document.getElementById('documentosError');
+            if (documentosSelecionados.length === 0) {
+                documentosError.style.display = 'block';
+                valido = false;
+            } else {
+                documentosError.style.display = 'none';
+            }
+            
+            // Validação foto
+            if (!fileInput.files[0]) {
+                photoUpload.classList.add('error');
+                photoError.style.display = 'block';
+                valido = false;
+            } else {
+                photoUpload.classList.remove('error');
+                photoError.style.display = 'none';
+            }
+            
+            return valido;
+        }
+        
+        // Coletar dados do formulário
+        function coletarDadosFormulario() {
+            const dados = {};
+            
+            // Dados básicos
+            const campos = ['nome', 'nascimento', 'bi', 'nif', 'nacionalidade', 'endereco', 'telefone', 'email', 
+                           'empresa', 'cargo', 'area', 'endereco_profissional', 'contato_profissional', 
+                           'area_formacao', 'instituicao_ensino', 'data_cadastro'];
+            
+            campos.forEach(campo => {
+                const elemento = document.getElementById(campo);
+                if (elemento && elemento.value) {
+                    dados[campo] = elemento.value;
+                }
+            });
+            
+            // Qualificações (checkboxes)
+            const qualificacoes = [];
+            document.querySelectorAll('input[name="qualificacao"]:checked').forEach(checkbox => {
+                qualificacoes.push(checkbox.value);
+            });
+            if (qualificacoes.length > 0) {
+                dados.qualificacoes = qualificacoes.join(', ');
+            }
+            
+            // Categoria (radio)
+            const categoriaSelecionada = document.querySelector('input[name="categoria"]:checked');
+            if (categoriaSelecionada) {
+                dados.categoria = categoriaSelecionada.value;
+            }
+            
+            // Documentos (checkboxes)
+            const documentos = [];
+            document.querySelectorAll('input[name="documentos"]:checked').forEach(checkbox => {
+                documentos.push(checkbox.value);
+            });
+            if (documentos.length > 0) {
+                dados.documentos = documentos.join(', ');
+            }
+            
+            // Foto
+            dados.foto = fileInput.files[0] ? 'Foto enviada' : 'Sem foto';
+            
+            return dados;
+        }
+        
+        // ⭐⭐ FUNÇÃO DE ENVIO CORRIGIDA - USANDO POST ⭐⭐
+        function enviarParaGoogleSheets(dados) {
+            return new Promise((resolve, reject) => {
+                console.log('🔄 Iniciando envio para Google Sheets...');
+                console.log('📦 Dados a enviar:', dados);
+                
+                // Adicionar ação específica
+                dados.action = 'addMember';
+                
+                // Criar parâmetros URL encoded
+                const params = new URLSearchParams();
+                for (let key in dados) {
+                    if (dados.hasOwnProperty(key)) {
+                        params.append(key, dados[key]);
+                    }
+                }
+                
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', GOOGLE_SCRIPT_URL, true);
+                xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === 4) {
+                        console.log('📨 Status:', xhr.status);
+                        console.log('📄 Resposta:', xhr.responseText);
+                        
+                        if (xhr.status === 200) {
+                            try {
+                                const data = JSON.parse(xhr.responseText);
+                                resolve(data);
+                            } catch (e) {
+                                console.error('❌ Erro ao parsear JSON:', e);
+                                reject(new Error('Resposta inválida do servidor: ' + xhr.responseText));
+                            }
+                        } else {
+                            reject(new Error('Erro HTTP: ' + xhr.status));
+                        }
+                    }
+                };
+                
+                xhr.onerror = function() {
+                    reject(new Error('Erro de rede'));
+                };
+                
+                xhr.ontimeout = function() {
+                    reject(new Error('Timeout na requisição'));
+                };
+                
+                console.log('📤 Enviando dados via POST...');
+                xhr.send(params.toString());
+            });
+        }
+        
+        // Evento do botão ENVIAR CANDIDATURA
+        document.getElementById('btnCadastrar').addEventListener('click', async function() {
+            if (!validarFormulario()) {
+                alert('Por favor, preencha todos os campos obrigatórios corretamente.');
+                return;
+            }
+            
+            const btn = this;
+            const originalText = btn.innerHTML;
+            
+            btn.innerHTML = '<span>⏳</span> Enviando...';
+            btn.disabled = true;
+            document.body.classList.add('loading');
+            
+            try {
+                const dados = coletarDadosFormulario();
+                const resultado = await enviarParaGoogleSheets(dados);
+                
+                if (resultado.success) {
+                    successMessage.style.display = 'block';
+                    if (resultado.data && resultado.data.numeroMembro) {
+                        memberNumber.textContent = resultado.data.numeroMembro;
+                    }
+                    successMessage.scrollIntoView({ behavior: 'smooth' });
+                } else {
+                    throw new Error(resultado.message || 'Erro desconhecido no servidor');
+                }
+                
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('Erro ao enviar candidatura: ' + error.message);
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                document.body.classList.remove('loading');
+            }
+        });
+        
+        // Botão PDF
+        document.getElementById('btnPDF').addEventListener('click', function() {
+            if (validarFormulario()) {
+                // Forçar a exibição da foto no PDF
+                if (photoPreview.style.display === 'block') {
+                    // Garantir que a foto será visível no PDF
+                    photoUpload.style.display = 'block';
+                }
+                window.print();
+            } else {
+                alert('Preencha todos os campos obrigatórios antes de gerar o PDF.');
+            }
+        });
+        
+        // Botão Limpar
+        document.getElementById('btnLimpar').addEventListener('click', function() {
+            if (confirm('Tem certeza que deseja limpar todos os campos?')) {
+                document.getElementById('memberForm').reset();
+                successMessage.style.display = 'none';
+                fileInput.value = '';
+                photoPreview.style.display = 'none';
+                photoUpload.querySelector('.photo-icon').style.display = 'block';
+                photoUpload.querySelector('.photo-text').style.display = 'block';
+                
+                document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
+                document.getElementById('categoriaError').style.display = 'none';
+                photoUpload.classList.remove('error');
+                document.querySelectorAll('input').forEach(input => {
+                    input.style.borderColor = '#ddd';
+                });
+                
+                memberNumber.textContent = "A ser gerado pelo sistema...";
+                
+                // Restaurar a data atual
+                setCurrentDate();
+            }
+        });
+        
+        // Validações em tempo real
+        document.querySelectorAll('input[required]').forEach(campo => {
+            campo.addEventListener('blur', function() {
+                const errorId = this.id + 'Error';
+                const errorElement = document.getElementById(errorId);
+                if (this && errorElement) {
+                    if (!this.value) {
+                        this.style.borderColor = '#e74c3c';
+                        errorElement.style.display = 'block';
+                    } else {
+                        this.style.borderColor = '#ddd';
+                        errorElement.style.display = 'none';
+                    }
+                }
+            });
+        });
+        
+        document.querySelectorAll('input[name="categoria"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                document.getElementById('categoriaError').style.display = 'none';
+            });
+        });
+        
+        document.querySelectorAll('input[name="qualificacao"]').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const qualificacoesSelecionadas = document.querySelectorAll('input[name="qualificacao"]:checked');
+                const qualificacaoError = document.getElementById('qualificacaoError');
+                if (qualificacoesSelecionadas.length > 0) {
+                    qualificacaoError.style.display = 'none';
+                }
+            });
+        });
+        
+        document.querySelectorAll('input[name="documentos"]').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const documentosSelecionados = document.querySelectorAll('input[name="documentos"]:checked');
+                const documentosError = document.getElementById('documentosError');
+                if (documentosSelecionados.length > 0) {
+                    documentosError.style.display = 'none';
+                }
+            });
+        });
+        
+        // Validação telefone em tempo real
+        document.getElementById('telefone').addEventListener('input', function() {
+            const telefoneError = document.getElementById('telefoneError');
+            if (this.value && !/^\d+$/.test(this.value)) {
+                this.style.borderColor = '#e74c3c';
+                telefoneError.textContent = 'Por favor, insira apenas números';
+                telefoneError.style.display = 'block';
+            } else {
+                this.style.borderColor = '#ddd';
+                telefoneError.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
