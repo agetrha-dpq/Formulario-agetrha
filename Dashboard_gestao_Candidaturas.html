@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard AGETRHA - Gestão de Candidaturas</title>
     <style>
+        /* TODO O CSS PERMANECE IGUAL */
         * {
             box-sizing: border-box;
             font-family: 'Segoe UI', Arial, sans-serif;
@@ -17,7 +18,6 @@
             color: #333;
         }
         
-        /* Login Administrativo */
         .admin-login {
             max-width: 400px;
             margin: 100px auto;
@@ -66,7 +66,7 @@
             display: none;
         }
         
-        /* Dashboard */
+        /* TODO O RESTO DO CSS PERMANECE IGUAL */
         .dashboard {
             display: none;
         }
@@ -106,7 +106,6 @@
             margin: 0 auto;
         }
         
-        /* Métricas */
         .metrics-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -137,7 +136,6 @@
             margin: 0;
         }
         
-        /* Lista de Candidaturas */
         .candidates-section {
             background: white;
             padding: 25px;
@@ -261,7 +259,6 @@
         .status-aprovada { background: #27ae60; }
         .status-arquivada { background: #95a5a6; }
         
-        /* Loading */
         .loading {
             display: none;
             text-align: center;
@@ -284,7 +281,6 @@
             100% { transform: rotate(360deg); }
         }
         
-        /* Responsividade */
         @media (max-width: 768px) {
             .dashboard-content {
                 padding: 15px;
@@ -384,7 +380,7 @@
     </div>
 
     <script>
-        // ⭐⭐ CONFIGURAÇÃO PRINCIPAL - URL DO SCRIPT PRINCIPAL ⭐⭐
+        // ⭐⭐ CONFIGURAÇÃO PRINCIPAL - URL CORRETO ⭐⭐
         const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzYSkz5DS4yr7Pd2YgIUvjXY7kj_vBXa5fggmor0RMIALpfE8nfL7n6irWjut4hW3QUMQ/exec';
         
         // Elementos DOM
@@ -407,7 +403,7 @@
         // Variáveis globais
         let todasCandidaturas = [];
         
-        // 🔐 VALIDAÇÃO DE ADMIN
+        // 🔐 VALIDAÇÃO DE ADMIN - AGORA USA VALIDAÇÃO DO SERVIDOR
         async function validarAdmin() {
             const password = adminPasswordInput.value;
             
@@ -637,6 +633,26 @@
                             color: #5a9cf8; 
                             margin: 0;
                         }
+                        .container {
+                            display: flex;
+                            gap: 30px;
+                            margin-bottom: 20px;
+                        }
+                        .photo-section {
+                            flex: 0 0 150px;
+                            text-align: center;
+                        }
+                        .candidate-photo {
+                            width: 120px;
+                            height: 150px;
+                            border: 2px solid #ddd;
+                            border-radius: 5px;
+                            object-fit: cover;
+                            margin-bottom: 10px;
+                        }
+                        .details-section {
+                            flex: 1;
+                        }
                         .section { 
                             margin-bottom: 25px; 
                             padding: 20px;
@@ -647,20 +663,38 @@
                         .section-title { 
                             font-weight: bold; 
                             color: #5a9cf8;
-                            margin-bottom: 10px;
+                            margin-bottom: 15px;
                             font-size: 18px;
                         }
                         .field { 
                             margin-bottom: 8px; 
+                            display: flex;
                         }
                         .label { 
                             font-weight: bold; 
-                            display: inline-block;
                             width: 200px;
+                            flex-shrink: 0;
+                        }
+                        .value {
+                            flex: 1;
+                        }
+                        .photo-placeholder {
+                            width: 120px;
+                            height: 150px;
+                            border: 2px dashed #ccc;
+                            border-radius: 5px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            color: #666;
+                            font-size: 12px;
+                            text-align: center;
+                            background: #f9f9f9;
                         }
                         @media print {
                             body { padding: 10px; }
                             .section { break-inside: avoid; }
+                            .container { break-inside: avoid; }
                         }
                     </style>
                 </head>
@@ -671,40 +705,48 @@
                         <p><strong>Código de Inscrição:</strong> ${candidatura.codigo_inscricao}</p>
                     </div>
                     
-                    <div class="section">
-                        <div class="section-title">🔹 DADOS PESSOAIS</div>
-                        <div class="field"><span class="label">Nome Completo:</span> ${candidatura.nome}</div>
-                        <div class="field"><span class="label">Data de Nascimento:</span> ${formatarData(candidatura.nascimento)}</div>
-                        <div class="field"><span class="label">BI/Passaporte:</span> ${candidatura.bi}</div>
-                        <div class="field"><span class="label">NIF:</span> ${candidatura.nif || 'Não informado'}</div>
-                        <div class="field"><span class="label">Nacionalidade:</span> ${candidatura.nacionalidade}</div>
-                        <div class="field"><span class="label">Endereço:</span> ${candidatura.endereco || 'Não informado'}</div>
-                        <div class="field"><span class="label">Telefone/Whatsapp:</span> ${candidatura.telefone}</div>
-                        <div class="field"><span class="label">E-mail:</span> ${candidatura.email || 'Não informado'}</div>
+                    <div class="container">
+                        <div class="photo-section">
+                            <div class="photo-placeholder">Foto<br>3.5x4.5 cm<br>(Upload no formulário)</div>
+                            <div style="font-size: 11px; color: #666;">Foto 3.5x4.5 cm</div>
+                        </div>
+                        <div class="details-section">
+                            <div class="section">
+                                <div class="section-title">🔹 DADOS PESSOAIS</div>
+                                <div class="field"><span class="label">Nome Completo:</span><span class="value">${candidatura.nome}</span></div>
+                                <div class="field"><span class="label">Data de Nascimento:</span><span class="value">${formatarData(candidatura.nascimento)}</span></div>
+                                <div class="field"><span class="label">BI/Passaporte:</span><span class="value">${candidatura.bi}</span></div>
+                                <div class="field"><span class="label">NIF:</span><span class="value">${candidatura.nif || 'Não informado'}</span></div>
+                                <div class="field"><span class="label">Nacionalidade:</span><span class="value">${candidatura.nacionalidade}</span></div>
+                                <div class="field"><span class="label">Endereço:</span><span class="value">${candidatura.endereco || 'Não informado'}</span></div>
+                                <div class="field"><span class="label">Telefone/Whatsapp:</span><span class="value">${candidatura.telefone}</span></div>
+                                <div class="field"><span class="label">E-mail:</span><span class="value">${candidatura.email || 'Não informado'}</span></div>
+                            </div>
+                        </div>
                     </div>
                     
                     <div class="section">
                         <div class="section-title">🔹 DADOS PROFISSIONAIS</div>
-                        <div class="field"><span class="label">Instituição/Empresa:</span> ${candidatura.empresa || 'Não informado'}</div>
-                        <div class="field"><span class="label">Cargo/Função:</span> ${candidatura.cargo || 'Não informado'}</div>
-                        <div class="field"><span class="label">Área de Atuação:</span> ${candidatura.area || 'Não informado'}</div>
-                        <div class="field"><span class="label">Endereço Profissional:</span> ${candidatura.endereco_profissional || 'Não informado'}</div>
-                        <div class="field"><span class="label">Contato Profissional:</span> ${candidatura.contato_profissional || 'Não informado'}</div>
+                        <div class="field"><span class="label">Instituição/Empresa:</span><span class="value">${candidatura.empresa || 'Não informado'}</span></div>
+                        <div class="field"><span class="label">Cargo/Função:</span><span class="value">${candidatura.cargo || 'Não informado'}</span></div>
+                        <div class="field"><span class="label">Área de Atuação:</span><span class="value">${candidatura.area || 'Não informado'}</span></div>
+                        <div class="field"><span class="label">Endereço Profissional:</span><span class="value">${candidatura.endereco_profissional || 'Não informado'}</span></div>
+                        <div class="field"><span class="label">Contato Profissional:</span><span class="value">${candidatura.contato_profissional || 'Não informado'}</span></div>
                     </div>
                     
                     <div class="section">
                         <div class="section-title">🔹 QUALIFICAÇÃO ACADÉMICA</div>
-                        <div class="field"><span class="label">Qualificações:</span> ${candidatura.qualificacoes || 'Não informado'}</div>
-                        <div class="field"><span class="label">Área de Formação:</span> ${candidatura.area_formacao || 'Não informado'}</div>
-                        <div class="field"><span class="label">Instituição de Ensino:</span> ${candidatura.instituicao_ensino || 'Não informado'}</div>
+                        <div class="field"><span class="label">Qualificações:</span><span class="value">${candidatura.qualificacoes || 'Não informado'}</span></div>
+                        <div class="field"><span class="label">Área de Formação:</span><span class="value">${candidatura.area_formacao || 'Não informado'}</span></div>
+                        <div class="field"><span class="label">Instituição de Ensino:</span><span class="value">${candidatura.instituicao_ensino || 'Não informado'}</span></div>
                     </div>
                     
                     <div class="section">
                         <div class="section-title">🔹 OUTRAS INFORMAÇÕES</div>
-                        <div class="field"><span class="label">Categoria de Membro:</span> ${candidatura.categoria}</div>
-                        <div class="field"><span class="label">Documentos Anexos:</span> ${candidatura.documentos || 'Não informado'}</div>
-                        <div class="field"><span class="label">Data de Cadastro:</span> ${formatarData(candidatura.data_cadastro)}</div>
-                        <div class="field"><span class="label">Status:</span> ${candidatura.status}</div>
+                        <div class="field"><span class="label">Categoria de Membro:</span><span class="value">${candidatura.categoria}</span></div>
+                        <div class="field"><span class="label">Documentos Anexos:</span><span class="value">${candidatura.documentos || 'Não informado'}</span></div>
+                        <div class="field"><span class="label">Data de Cadastro:</span><span class="value">${formatarData(candidatura.data_cadastro)}</span></div>
+                        <div class="field"><span class="label">Status:</span><span class="value">${candidatura.status}</span></div>
                     </div>
                 </body>
                 </html>
@@ -713,7 +755,11 @@
             const janelaImpressao = window.open('', '_blank');
             janelaImpressao.document.write(conteudoImpressao);
             janelaImpressao.document.close();
-            janelaImpressao.print();
+            
+            // Aguardar um pouco para a imagem carregar antes de imprimir
+            setTimeout(() => {
+                janelaImpressao.print();
+            }, 500);
         }
         
         // 🗓️ FORMATAR DATA
