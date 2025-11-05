@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard AGETRHA - Gestão de Candidaturas</title>
     <style>
-        /* TODO O CSS PERMANECE IGUAL */
         * {
             box-sizing: border-box;
             font-family: 'Segoe UI', Arial, sans-serif;
@@ -66,7 +65,6 @@
             display: none;
         }
         
-        /* TODO O RESTO DO CSS PERMANECE IGUAL */
         .dashboard {
             display: none;
         }
@@ -78,12 +76,41 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
         }
         
         .dashboard-header h1 {
             color: #5a9cf8;
             margin: 0;
             font-size: 24px;
+        }
+        
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .form-btn {
+            background: #6f42c1;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.3s;
+        }
+        
+        .form-btn:hover {
+            background: #7952b3;
+            text-decoration: none;
+            color: white;
         }
         
         .logout-btn {
@@ -286,6 +313,16 @@
                 padding: 15px;
             }
             
+            .dashboard-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .header-buttons {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
             .filters {
                 flex-direction: column;
             }
@@ -320,7 +357,12 @@
     <div id="dashboard" class="dashboard">
         <header class="dashboard-header">
             <h1>📊 Dashboard AGETRHA - Gestão de Candidaturas</h1>
-            <button class="logout-btn" onclick="sairDashboard()">🚪 Sair do Sistema</button>
+            <div class="header-buttons">
+                <a href="https://agetrha-dpq.github.io/Formulario-agetrha/" class="form-btn" target="_blank">
+                    <span>📝</span> Formulário de Membro
+                </a>
+                <button class="logout-btn" onclick="sairDashboard()">🚪 Sair do Sistema</button>
+            </div>
         </header>
 
         <div class="dashboard-content">
