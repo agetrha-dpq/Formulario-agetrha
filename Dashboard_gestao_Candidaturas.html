@@ -17,56 +17,8 @@
             color: #333;
         }
         
-        .admin-login {
-            max-width: 400px;
-            margin: 100px auto;
-            background: white;
-            padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            text-align: center;
-        }
-        
-        .admin-login h2 {
-            color: #5a9cf8;
-            margin-bottom: 20px;
-        }
-        
-        .admin-login input {
-            width: 100%;
-            padding: 12px;
-            margin: 15px 0;
-            border: 2px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
-            text-align: center;
-        }
-        
-        .admin-login button {
-            background-color: #5a9cf8;
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-            transition: background-color 0.3s;
-            width: 100%;
-        }
-        
-        .admin-login button:hover {
-            background-color: #4a8be5;
-        }
-        
-        .admin-error {
-            color: #e74c3c;
-            margin: 10px 0;
-            display: none;
-        }
-        
         .dashboard {
-            display: none;
+            display: block;
         }
         
         .dashboard-header {
@@ -111,20 +63,6 @@
             background: #7952b3;
             text-decoration: none;
             color: white;
-        }
-        
-        .logout-btn {
-            background: #dc3545;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-        
-        .logout-btn:hover {
-            background: #e15361;
         }
         
         .dashboard-content {
@@ -344,15 +282,6 @@
     </style>
 </head>
 <body>
-    <!-- Tela de Login Administrativo -->
-    <div id="adminLogin" class="admin-login">
-        <h2>🔐 Acesso Administrativo AGETRHA</h2>
-        <p>Digite a senha de administrador:</p>
-        <input type="password" id="adminPassword" placeholder="Senha administrativa">
-        <div class="admin-error" id="adminError">Senha incorreta. Tente novamente.</div>
-        <button onclick="validarAdmin()">Acessar Dashboard</button>
-    </div>
-
     <!-- Dashboard Principal -->
     <div id="dashboard" class="dashboard">
         <header class="dashboard-header">
@@ -361,7 +290,6 @@
                 <a href="https://agetrha-dpq.github.io/Formulario-agetrha/" class="form-btn" target="_blank">
                     <span>📝</span> Formulário de Membro
                 </a>
-                <button class="logout-btn" onclick="sairDashboard()">🚪 Sair do Sistema</button>
             </div>
         </header>
 
@@ -426,11 +354,6 @@
         const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwmddNGXvdBjU8VZfng30uunDK4OHArVURLz2tyIcJkZ4IMJqxZZEYxZM-yvSSlc6o6Ww/exec';
         
         // Elementos DOM
-        const adminLogin = document.getElementById('adminLogin');
-        const dashboard = document.getElementById('dashboard');
-        const adminPasswordInput = document.getElementById('adminPassword');
-        const adminError = document.getElementById('adminError');
-        
         const totalCandidaturasElement = document.getElementById('totalCandidaturas');
         const novasEsteMesElement = document.getElementById('novasEsteMes');
         const candidaturasPendentesElement = document.getElementById('candidaturasPendentes');
@@ -444,45 +367,6 @@
         
         // Variáveis globais
         let todasCandidaturas = [];
-        
-        // 🔐 VALIDAÇÃO DE ADMIN - AGORA USA VALIDAÇÃO DO SERVIDOR
-        async function validarAdmin() {
-            const password = adminPasswordInput.value;
-            
-            if (!password) {
-                adminError.textContent = 'Por favor, digite a senha';
-                adminError.style.display = 'block';
-                return;
-            }
-            
-            try {
-                const response = await fetch(`${GOOGLE_SCRIPT_URL}?action=validateAdmin&password=${encodeURIComponent(password)}`);
-                const result = await response.json();
-                
-                if (result.valid) {
-                    adminLogin.style.display = 'none';
-                    dashboard.style.display = 'block';
-                    carregarDashboard();
-                } else {
-                    adminError.textContent = 'Senha incorreta. Tente novamente.';
-                    adminError.style.display = 'block';
-                    adminPasswordInput.value = '';
-                    adminPasswordInput.focus();
-                }
-            } catch (error) {
-                adminError.textContent = 'Erro de conexão. Tente novamente.';
-                adminError.style.display = 'block';
-                console.error('Erro na validação:', error);
-            }
-        }
-        
-        function sairDashboard() {
-            dashboard.style.display = 'none';
-            adminLogin.style.display = 'block';
-            adminPasswordInput.value = '';
-            adminError.style.display = 'none';
-            todasCandidaturas = [];
-        }
         
         // 📊 CARREGAR DASHBOARD
         async function carregarDashboard() {
@@ -841,15 +725,9 @@
             atualizarListaCandidaturas(candidaturasFiltradas);
         }
         
-        // ↩️ ENTER NO CAMPO DE SENHA
-        adminPasswordInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                validarAdmin();
-            }
-        });
-        
         // 🎯 INICIALIZAÇÃO
         console.log('🚀 Dashboard AGETRHA carregada e pronta!');
+        carregarDashboard();
     </script>
 </body>
 </html>
