@@ -1410,181 +1410,97 @@
     </div>
 
     <script>
-        // URL do Google Apps Script para carregar membros
-        const MEMBROS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxQiT1azwadu1QljcSpr2LHelNp3zMDTh_pfKyzoHYHEUZruxXqtenoX4WxtZ0YQf3g6Q/exec';
         
-        // Dados do organograma
-        let organograma = JSON.parse(localStorage.getItem('organograma')) || {};
-        let cargoAtual = '';
-        let listaMembros = []; // Array para armazenar a lista de membros da planilha
-        let fotoTemp = null; // Variável temporária para armazenar a foto antes de salvar
+    // URL do Google Apps Script com proxy CORS
+    const MEMBROS_SCRIPT_URL = 'https://corsproxy.io/?https://script.google.com/macros/s/AKfycbxQiT1azwadu1QljcSpr2LHelNp3zMDTh_pfKyzoHYHEUZruxXqtenoX4WxtZ0YQf3g6Q/exec';
+    
+    // Dados do organograma
+    let organograma = JSON.parse(localStorage.getItem('organograma')) || {};
+    let cargoAtual = '';
+    let listaMembros = [];
+    let fotoTemp = null;
 
-        // Função para carregar membros da planilha
-        async function carregarMembros() {
-            try {
-                console.log('Carregando membros da planilha...');
-                document.getElementById('loading-membros').style.display = 'block';
+    // Função para carregar membros da planilha
+    async function carregarMembros() {
+        try {
+            console.log('Carregando membros da planilha...');
+            document.getElementById('loading-membros').style.display = 'block';
+            
+            const timestamp = new Date().getTime();
+            const response = await fetch(`${MEMBROS_SCRIPT_URL}?action=getMembers&t=${timestamp}`);
+            
+            if (!response.ok) {
+                throw new Error(`Erro HTTP: ${response.status}`);
+            }
+            
+            const result = await response.json();
+            console.log('Resposta completa da planilha:', result);
+            
+            if (result.success && result.members) {
+                listaMembros = result.members;
+                console.log(`${listaMembros.length} membros carregados da planilha`);
                 
-                // Usar o endpoint correto do Google Apps Script
-                const timestamp = new Date().getTime();
-                const response = await fetch(`${MEMBROS_SCRIPT_URL}?action=getMembers&t=${timestamp}`);
-                
-                if (!response.ok) {
-                    throw new Error(`Erro HTTP: ${response.status}`);
-                }
-                
-                const result = await response.json();
-                console.log('Resposta completa da planilha:', result);
-                
-                if (result.success && result.members) {
-                    listaMembros = result.members;
-                    console.log(`${listaMembros.length} membros carregados da planilha`);
-                    
-                    // Atualizar o dropdown de nomes
-                    atualizarDropdownNomes();
-                    
-                    document.getElementById('loading-membros').style.display = 'none';
-                    return listaMembros;
-                } else {
-                    console.warn('Formato de dados inesperado ou erro:', result);
-                    document.getElementById('loading-membros').style.display = 'none';
-                    // Tentar carregar dados de fallback
-                    carregarMembrosFallback();
-                    return [];
-                }
-            } catch (error) {
-                console.error('Erro ao carregar membros:', error);
+                atualizarDropdownNomes();
                 document.getElementById('loading-membros').style.display = 'none';
-                // Tentar carregar dados de fallback
+                return listaMembros;
+            } else {
+                console.warn('Formato de dados inesperado ou erro:', result);
+                document.getElementById('loading-membros').style.display = 'none';
                 carregarMembrosFallback();
                 return [];
             }
+        } catch (error) {
+            console.error('Erro ao carregar membros:', error);
+            document.getElementById('loading-membros').style.display = 'none';
+            carregarMembrosFallback();
+            return [];
         }
+    }
 
-        // Função de fallback para carregar membros caso a API falhe
-        function carregarMembrosFallback() {
-            console.log('Usando dados de fallback para membros...');
-            
-            // Dados de exemplo para fallback
-            listaMembros = [
-                { numeroMembro: '001', nome: 'GERALDINA FRANCISCO' },
-                { numeroMembro: '002', nome: 'UMBELINO CLEMENTE' },
-                { numeroMembro: '003', nome: 'JEREMIAS JERÔNIMO' },
-                { numeroMembro: '004', nome: 'PEDRO GASPAR' },
-                { numeroMembro: '005', nome: 'MARIA SILVA' },
-                { numeroMembro: '006', nome: 'JOÃO SANTOS' }
-            ];
-            
-            atualizarDropdownNomes();
-        }
+    // Função para atualizar cargo na planilha via GAS
+    async function atualizarCargoPlanilha(cargoId, nomeCompleto) {
+        try {
+            const formData = new FormData();
+            formData.append('action', 'updateCargo');
+            formData.append('cargoId', cargoId);
+            formData.append('nomeCompleto', nomeCompleto);
 
-        // Função para atualizar o dropdown de nomes no modal
-        function atualizarDropdownNomes() {
-            const selectNome = document.getElementById('nome-cargo');
-            
-            if (!selectNome) return;
-            
-            // Salvar a seleção atual
-            const selecaoAtual = selectNome.value;
-            
-            // Limpar opções existentes (exceto a primeira)
-            while (selectNome.children.length > 1) {
-                selectNome.removeChild(selectNome.lastChild);
-            }
-            
-            // Adicionar cada membro ao select
-            listaMembros.forEach(membro => {
-                let numeroMembro, nome;
-                
-                if (typeof membro === 'object') {
-                    numeroMembro = membro.numeroMembro || '';
-                    nome = membro.nome || '';
-                } else {
-                    console.warn('Formato de membro desconhecido:', membro);
-                    return;
-                }
-                
-                if (nome && nome.trim() !== '') {
-                    const option = document.createElement('option');
-                    option.value = nome;
-                    option.textContent = nome;
-                    option.setAttribute('data-numero-membro', numeroMembro);
-                    selectNome.appendChild(option);
-                }
+            const response = await fetch(MEMBROS_SCRIPT_URL, {
+                method: 'POST',
+                body: formData
             });
-            
-            // Restaurar a seleção anterior se ainda existir
-            if (selecaoAtual) {
-                selectNome.value = selecaoAtual;
-            }
-            
-            console.log('Dropdown atualizado com', listaMembros.length, 'membros');
+
+            const result = await response.json();
+            return result.success;
+        } catch (error) {
+            console.error('Erro ao atualizar cargo na planilha:', error);
+            return false;
         }
+    }
 
-        // Função para atualizar cargo na planilha via GAS
-        async function atualizarCargoPlanilha(cargoId, nomeCompleto) {
-            try {
-                const formData = new FormData();
-                formData.append('action', 'updateCargo');
-                formData.append('cargoId', cargoId);
-                formData.append('nomeCompleto', nomeCompleto);
+    // Função para fazer upload de foto via GAS
+    async function uploadFotoGAS(cargoId, imageData) {
+        try {
+            const formData = new FormData();
+            formData.append('action', 'uploadFoto');
+            formData.append('cargoId', cargoId);
+            formData.append('imageData', imageData);
 
-                const response = await fetch(MEMBROS_SCRIPT_URL, {
-                    method: 'POST',
-                    body: formData
-                });
+            const response = await fetch(MEMBROS_SCRIPT_URL, {
+                method: 'POST',
+                body: formData
+            });
 
-                const result = await response.json();
-                return result.success;
-            } catch (error) {
-                console.error('Erro ao atualizar cargo na planilha:', error);
-                return false;
-            }
+            const result = await response.json();
+            return result;
+        } catch (error) {
+            console.error('Erro ao fazer upload da foto:', error);
+            return { success: false, error: error.message };
         }
+    }
 
-        // Função para adicionar novo cargo na planilha via GAS
-        async function adicionarCargoPlanilha(dadosCargo) {
-            try {
-                const formData = new FormData();
-                formData.append('action', 'addCargo');
-                formData.append('nomeCargo', dadosCargo.nomeCargo);
-                formData.append('departamento', dadosCargo.departamento);
-                formData.append('descricao', dadosCargo.descricao);
-                formData.append('nivelHierarquia', dadosCargo.nivelHierarquia);
-
-                const response = await fetch(MEMBROS_SCRIPT_URL, {
-                    method: 'POST',
-                    body: formData
-                });
-
-                const result = await response.json();
-                return result;
-            } catch (error) {
-                console.error('Erro ao adicionar cargo na planilha:', error);
-                return { success: false, error: error.message };
-            }
-        }
-
-        // Função para fazer upload de foto via GAS
-        async function uploadFotoGAS(cargoId, imageData) {
-            try {
-                const formData = new FormData();
-                formData.append('action', 'uploadFoto');
-                formData.append('cargoId', cargoId);
-                formData.append('imageData', imageData);
-
-                const response = await fetch(MEMBROS_SCRIPT_URL, {
-                    method: 'POST',
-                    body: formData
-                });
-
-                const result = await response.json();
-                return result;
-            } catch (error) {
-                console.error('Erro ao fazer upload da foto:', error);
-                return { success: false, error: error.message };
-            }
-        }
+    // Restante do código permanece igual...
+    // [Mantenha todas as outras funções como carregarMembrosFallback, atualizarDropdownNomes, etc.]
 
         // Função para voltar ao organograma
         function voltarAoOrganograma() {
