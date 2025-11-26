@@ -1083,7 +1083,7 @@
         // URL do Google Apps Script
         const GAS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxQiT1azwadu1QljcSpr2LHelNp3zMDTh_pfKyzoHYHEUZruxXqtenoX4WxtZ0YQf3g6Q/exec';
         
-        // Dados do organograma - AGORA SEM LOCALSTORAGE
+        // Dados do organograma - SEM LOCALSTORAGE
         let organograma = {};
         let cargoAtual = '';
         let listaMembros = [];
@@ -1101,80 +1101,7 @@
             }, 5000);
         }
 
-        // SOLUÇÃO: Usar Google Forms como proxy para contornar CORS
-        // Criar um Google Form que envia dados para o GAS
-        const FORM_PROXY_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSdEXAMPLE/formResponse'; // Substitua pelo ID real do seu Form
-
-        // SOLUÇÃO: Função para fazer requisições POST usando Google Forms como proxy
-        async function enviarDadosParaGAS(acao, dados) {
-            console.log(`📤 Enviando dados para GAS: ${acao}`, dados);
-            
-            try {
-                // Criar um formulário dinâmico
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = GAS_SCRIPT_URL;
-                form.style.display = 'none';
-                
-                // Adicionar campos ao formulário
-                const actionField = document.createElement('input');
-                actionField.name = 'action';
-                actionField.value = acao;
-                form.appendChild(actionField);
-                
-                Object.keys(dados).forEach(key => {
-                    const input = document.createElement('input');
-                    input.name = key;
-                    input.value = dados[key];
-                    form.appendChild(input);
-                });
-                
-                // Adicionar formulário à página e submeter
-                document.body.appendChild(form);
-                form.submit();
-                
-                // Remover formulário após submissão
-                setTimeout(() => {
-                    document.body.removeChild(form);
-                }, 1000);
-                
-                return { success: true, message: 'Dados enviados para o servidor' };
-            } catch (error) {
-                console.error(`❌ Erro ao enviar dados para GAS: ${error.message}`);
-                return { success: false, error: error.message };
-            }
-        }
-
-        // SOLUÇÃO: Função para fazer upload de foto usando FormData
-        async function uploadFotoParaGAS(cargoId, imageData) {
-            console.log(`📤 Fazendo upload de foto para: ${cargoId}`);
-            
-            try {
-                // Extrair apenas a parte base64 do data URL
-                const base64Data = imageData.replace(/^data:image\/\w+;base64,/, '');
-                
-                // Criar FormData
-                const formData = new FormData();
-                formData.append('action', 'uploadFoto');
-                formData.append('cargoId', cargoId);
-                formData.append('imageData', base64Data);
-                
-                // Enviar requisição POST
-                const response = await fetch(GAS_SCRIPT_URL, {
-                    method: 'POST',
-                    body: formData,
-                    mode: 'no-cors' // Modo no-cors para evitar problemas de CORS
-                });
-                
-                console.log('✅ Foto enviada para o servidor');
-                return { success: true, message: 'Foto enviada para o servidor' };
-            } catch (error) {
-                console.error(`❌ Erro ao fazer upload da foto: ${error.message}`);
-                return { success: false, error: error.message };
-            }
-        }
-
-        // SOLUÇÃO: Carregar membros com dados reais do GAS
+        // SOLUÇÃO: Função para carregar membros com tratamento de erro melhorado
         async function carregarMembros() {
             try {
                 console.log('📋 Carregando membros...');
@@ -1208,10 +1135,7 @@
                 listaMembros = [
                     { numeroMembro: '001', nome: 'GERALDINA FRANCISCO' },
                     { numeroMembro: '002', nome: 'UMBELINO CLEMENTE' },
-                    { numeroMembro: '003', nome: 'JEREMIAS JERÔNIMO' },
-                    { numeroMembro: '004', nome: 'PEDRO GASPAR' },
-                    { numeroMembro: '005', nome: 'MARIA SILVA' },
-                    { numeroMembro: '006', nome: 'JOÃO SANTOS' }
+                    { numeroMembro: '003', nome: 'JEREMIAS JERÔNIMO' }
                 ];
                 
                 atualizarDropdownNomes();
@@ -1264,6 +1188,8 @@
             if (!img) return;
             
             const presidente = organograma['presidente-nacional'];
+            console.log('📸 Dados da presidente:', presidente); // DEBUG
+            
             if (presidente && presidente.foto) {
                 img.src = presidente.foto;
                 img.classList.remove('placeholder');
@@ -1278,7 +1204,7 @@
             }
         }
 
-        // SOLUÇÃO: Carregar dados do organograma do GAS
+        // SOLUÇÃO: Carregar dados do organograma do GAS com fallback
         async function carregarOrganogramaDoGAS() {
             try {
                 console.log('🔄 Carregando organograma do GAS...');
@@ -1289,6 +1215,8 @@
                 
                 if (response.ok) {
                     const result = await response.json();
+                    console.log('📊 Resposta do GAS:', result); // DEBUG
+                    
                     if (result.success) {
                         // Processar os dados do organograma
                         if (result.cargos && result.fotos) {
@@ -1304,19 +1232,53 @@
                             });
                             
                             console.log('✅ Organograma carregado do GAS');
-                            carregarOrganogramaNaInterface();
-                            loadPresidentPhoto();
+                            console.log('📋 Dados do organograma:', organograma); // DEBUG
+                        } else {
+                            console.warn('⚠️ Estrutura de dados inesperada do GAS');
+                            // Usar dados de fallback
+                            organograma = criarOrganogramaVazio();
                         }
                     } else {
-                        throw new Error('Falha ao carregar organograma do GAS');
+                        throw new Error('Falha ao carregar organograma do GAS: ' + (result.error || 'Erro desconhecido'));
                     }
                 } else {
                     throw new Error(`Erro HTTP: ${response.status}`);
                 }
             } catch (error) {
                 console.error('❌ Erro ao carregar organograma do GAS:', error);
+                // Usar dados de fallback
+                organograma = criarOrganogramaVazio();
                 showStatus('Erro ao carregar organograma do servidor', 'error');
             }
+            
+            // Carregar a interface independentemente do resultado
+            carregarOrganogramaNaInterface();
+            loadPresidentPhoto();
+        }
+
+        // SOLUÇÃO: Criar organograma vazio como fallback
+        function criarOrganogramaVazio() {
+            const organogramaVazio = {};
+            
+            // Lista de todos os cargos possíveis
+            const cargos = [
+                'presidente-assembleia', 'primeiro-vogal-assembleia', 'segundo-vogal-assembleia',
+                'presidente-nacional', 'vice-presidente-nacional', 'secretario-presidencia',
+                'primeiro-secretario', 'segundo-secretario', 'presidente-fiscal',
+                'secretario-fiscal', 'primeiro-vogal-fiscal', 'segundo-vogal-fiscal',
+                'primeiro-conselheiro', 'segundo-conselheiro'
+            ];
+            
+            // Inicializar todos os cargos como vazios
+            cargos.forEach(cargoId => {
+                organogramaVazio[cargoId] = {
+                    nome: '',
+                    numeroMembro: '',
+                    foto: null
+                };
+            });
+            
+            return organogramaVazio;
         }
 
         // SOLUÇÃO: Carregar dados do organograma na interface
@@ -1405,7 +1367,7 @@
             document.getElementById('modal-cargo').style.display = 'flex';
         }
 
-        // SOLUÇÃO: Salvar cargo diretamente no GAS
+        // SOLUÇÃO: Salvar cargo usando FormData para evitar problemas de CORS
         async function salvarCargo() {
             const nome = document.getElementById('nome-cargo').value;
             const numeroMembro = document.getElementById('numero-membro-cargo').value;
@@ -1418,14 +1380,24 @@
             // Se há uma nova foto, fazer upload primeiro
             if (fotoTemp !== null) {
                 try {
-                    const resultadoUpload = await uploadFotoParaGAS(cargoAtual, fotoTemp);
+                    // Extrair apenas a parte base64 do data URL
+                    const base64Data = fotoTemp.replace(/^data:image\/\w+;base64,/, '');
                     
-                    if (resultadoUpload.success) {
-                        console.log('✅ Foto enviada para o GAS com sucesso');
-                        showStatus('Foto enviada para o servidor');
-                    } else {
-                        throw new Error(resultadoUpload.error);
-                    }
+                    // Criar FormData para upload da foto
+                    const formDataFoto = new FormData();
+                    formDataFoto.append('action', 'uploadFoto');
+                    formDataFoto.append('cargoId', cargoAtual);
+                    formDataFoto.append('imageData', base64Data);
+                    
+                    // Enviar requisição POST para upload da foto
+                    const responseFoto = await fetch(GAS_SCRIPT_URL, {
+                        method: 'POST',
+                        body: formDataFoto,
+                        mode: 'no-cors'
+                    });
+                    
+                    console.log('✅ Foto enviada para o servidor');
+                    showStatus('Foto enviada para o servidor');
                 } catch (error) {
                     console.error('❌ Erro ao fazer upload da foto:', error);
                     showStatus('Erro ao enviar foto para o servidor', 'error');
@@ -1435,30 +1407,34 @@
             
             // Atualizar o cargo no GAS
             try {
-                const resultadoUpdate = await enviarDadosParaGAS('updateCargo', {
-                    cargoId: cargoAtual,
-                    nomeCompleto: nome,
-                    numeroMembro: numeroMembro
+                // Criar FormData para atualizar o cargo
+                const formDataCargo = new FormData();
+                formDataCargo.append('action', 'updateCargo');
+                formDataCargo.append('cargoId', cargoAtual);
+                formDataCargo.append('nomeCompleto', nome);
+                formDataCargo.append('numeroMembro', numeroMembro);
+                
+                // Enviar requisição POST para atualizar o cargo
+                const responseCargo = await fetch(GAS_SCRIPT_URL, {
+                    method: 'POST',
+                    body: formDataCargo,
+                    mode: 'no-cors'
                 });
                 
-                if (resultadoUpdate.success) {
-                    console.log('✅ Cargo atualizado no GAS com sucesso');
-                    
-                    // Atualizar dados locais em memória (não no localStorage)
-                    organograma[cargoAtual] = {
-                        nome: nome,
-                        numeroMembro: numeroMembro,
-                        foto: fotoTemp !== null ? fotoTemp : (organograma[cargoAtual] ? organograma[cargoAtual].foto : null)
-                    };
-                    
-                    // Recarregar dados do GAS para garantir sincronização
-                    await carregarOrganogramaDoGAS();
-                    
-                    showStatus('Cargo atualizado com sucesso!');
-                    fecharModalCargo();
-                } else {
-                    throw new Error(resultadoUpdate.error);
-                }
+                console.log('✅ Cargo atualizado no GAS');
+                
+                // Atualizar dados locais em memória (não no localStorage)
+                organograma[cargoAtual] = {
+                    nome: nome,
+                    numeroMembro: numeroMembro,
+                    foto: fotoTemp !== null ? fotoTemp : (organograma[cargoAtual] ? organograma[cargoAtual].foto : null)
+                };
+                
+                // Recarregar dados do GAS para garantir sincronização
+                await carregarOrganogramaDoGAS();
+                
+                showStatus('Cargo atualizado com sucesso!');
+                fecharModalCargo();
             } catch (error) {
                 console.error('❌ Erro ao atualizar cargo no GAS:', error);
                 showStatus('Erro ao atualizar cargo no servidor', 'error');
