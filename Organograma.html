@@ -3,21 +3,2135 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: 'unsafe-inline' 'unsafe-eval'; script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https:; style-src 'self' https://cdnjs.cloudflare.com 'unsafe-inline'; img-src 'self' data: https:;">
     <title>Dashboard - Organograma AGETRHA</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    
-    <!-- COLE AQUI TODO O CSS DO SEU ARQUIVO ORIGINAL -->
     <style>
-        /* TODO O SEU CSS AQUI */
+        :root {
+            --primary: #1a4e8e;
+            --secondary: #2a6cba;
+            --success: #28a745;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --light: #f8f9fa;
+            --dark: #343a40;
+            --gray: #6c757d;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 250px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 20px 0;
+            transition: all 0.3s;
+            box-shadow: 3px 0 10px rgba(0,0,0,0.1);
+        }
+        
+        .sidebar-header {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+            border-radius: 0;
+            margin: 0;
+            padding: 15px;
+        }
+        
+        .sidebar-header img {
+            width: 120px;
+            margin-bottom: 10px;
+        }
+        
+        .sidebar-menu {
+            list-style: none;
+            padding: 20px 0;
+        }
+        
+        .sidebar-menu li {
+            padding: 0;
+        }
+        
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            transition: all 0.3s;
+            border-left: 3px solid transparent;
+        }
+        
+        .sidebar-menu a:hover, .sidebar-menu a.active {
+            background-color: rgba(255,255,255,0.1);
+            color: white;
+            border-left: 3px solid white;
+        }
+        
+        .sidebar-menu i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+        
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        /* Top Bar */
+        .top-bar {
+            background: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .logo-texto {
+            display: flex;
+            align-items: center;
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 18px;
+        }
+        
+        .logo-texto img {
+            height: 40px;
+            margin-right: 10px;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+        
+        .user-info img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+            object-fit: cover;
+        }
+        
+        /* Content Area */
+        .content {
+            padding: 30px;
+            overflow-y: auto;
+            flex: 1;
+        }
+        
+        .page-title {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .page-title h1 {
+            color: var(--primary);
+            font-size: 24px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--secondary);
+        }
+        
+        .btn-success {
+            background-color: var(--success);
+            color: white;
+        }
+        
+        .btn-danger {
+            background-color: var(--danger);
+            color: white;
+        }
+        
+        .btn-warning {
+            background-color: var(--warning);
+            color: var(--dark);
+        }
+        
+        .btn-warning:hover {
+            background-color: #e0a800;
+            color: var(--dark);
+        }
+        
+        .btn i {
+            margin-right: 5px;
+        }
+        
+        /* ===== ESTILOS DO ORGANOGRAMA ===== */
+        .organograma-container {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+            margin-bottom: 30px;
+            position: relative;
+            overflow-x: auto;
+        }
+        
+        .organograma {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 1200px;
+        }
+        
+        /* Linhas do organograma */
+        .org-level {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            margin-bottom: 40px;
+            position: relative;
+        }
+        
+        /* Cartões de cargo */
+        .org-card {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            border: 1px solid #e0e0e0;
+            text-align: center;
+            width: 200px;
+            margin: 0 15px;
+            position: relative;
+            transition: all 0.3s;
+            z-index: 2;
+        }
+        
+        .org-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+        }
+        
+        .org-card.vaga {
+            background-color: #f8f9fa;
+            border: 1px dashed var(--gray);
+        }
+        
+        .photo-placeholder {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px;
+            border: 3px solid var(--primary);
+            color: var(--gray);
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .org-photo {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 0 auto 10px;
+            border: 3px solid var(--primary);
+        }
+        
+        .org-photo.placeholder {
+            background-color: #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--gray);
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .org-name {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 5px;
+            color: var(--dark);
+        }
+        
+        .org-position {
+            font-size: 12px;
+            color: var(--primary);
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+        
+        .org-member-id {
+            font-size: 11px;
+            color: var(--gray);
+        }
+        
+        .org-vaga {
+            font-size: 12px;
+            color: var(--gray);
+            font-style: italic;
+            margin-top: 10px;
+        }
+        
+        .org-actions {
+            margin-top: 10px;
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+        }
+        
+        .org-action-btn {
+            padding: 5px 8px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .org-action-btn.edit {
+            background-color: rgba(40, 167, 69, 0.1);
+            color: var(--success);
+        }
+        
+        .org-action-btn.delete {
+            background-color: rgba(220, 53, 69, 0.1);
+            color: var(--danger);
+        }
+        
+        /* Títulos das seções */
+        .org-section-title {
+            text-align: center;
+            margin: 30px 0 20px;
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 18px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+        
+        .org-section-title:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 3px;
+            background: var(--primary);
+        }
+        
+        /* Estrutura Hierárquica Vertical */
+        .org-departamento {
+            margin-bottom: 60px;
+            position: relative;
+        }
+        
+        .org-hierarchy {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+        
+        .org-hierarchy-level {
+            display: flex;
+            justify-content: center;
+            position: relative;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+        
+        .org-hierarchy-level:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 20px;
+            background-color: var(--primary);
+        }
+        
+        .org-hierarchy-level.multiple::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            height: 2px;
+            background-color: var(--primary);
+        }
+        
+        .org-hierarchy-level.multiple .org-card {
+            position: relative;
+        }
+        
+        .org-hierarchy-level.multiple .org-card:not(:first-child)::before {
+            content: '';
+            position: absolute;
+            top: -25px;
+            left: -50%;
+            width: 100%;
+            height: 2px;
+            background-color: var(--primary);
+        }
+        
+        .photo-preview {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 10px auto;
+            border: 3px solid var(--primary);
+            display: block;
+        }
+        
+        .photo-preview.placeholder {
+            background-color: #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--gray);
+            font-size: 40px;
+            font-weight: bold;
+        }
+        
+        /* Botão para expandir/recolher departamentos */
+        .toggle-departments {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        /* Estilos para a seção de chefes */
+        .chefes-container {
+            display: none;
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+            margin-bottom: 30px;
+        }
+        
+        .chefes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .chefe-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            border: 1px solid #e0e0e0;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        
+        .chefe-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+        }
+        
+        .chefe-photo {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 0 auto 15px;
+            border: 3px solid var(--primary);
+        }
+        
+        .chefe-photo.placeholder {
+            background-color: #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--gray);
+            font-size: 30px;
+            font-weight: bold;
+        }
+        
+        .chefe-nome {
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 5px;
+            color: var(--dark);
+        }
+        
+        .chefe-cargo {
+            font-size: 14px;
+            color: var(--primary);
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+        
+        .chefe-departamento {
+            font-size: 12px;
+            color: var(--gray);
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+        
+        .chefe-id {
+            font-size: 11px;
+            color: var(--gray);
+        }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-body {
+            padding: 20px;
+        }
+        
+        .modal-footer {
+            padding: 20px;
+            border-top: 1px solid #ddd;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
+        /* Forms */
+        .form-container {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 15px;
+        }
+        
+        .form-control:read-only {
+            background-color: #f8f9fa;
+            color: #6c757d;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 70px;
+            }
+            
+            .sidebar-header h2, .sidebar-menu span {
+                display: none;
+            }
+            
+            .sidebar-menu a {
+                justify-content: center;
+                padding: 15px;
+            }
+            
+            .sidebar-menu i {
+                margin-right: 0;
+                font-size: 20px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .page-title {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .page-title h1 {
+                font-size: 20px;
+            }
+            
+            .btn {
+                padding: 8px 16px;
+                font-size: 14px;
+            }
+            
+            .content {
+                padding: 15px;
+            }
+            
+            .organograma-container {
+                padding: 15px;
+            }
+            
+            .org-card {
+                width: 160px;
+                margin: 0 10px;
+            }
+            
+            .chefes-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .top-bar {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 15px;
+            }
+            
+            .logo-texto {
+                margin-bottom: 15px;
+            }
+            
+            .content {
+                padding: 15px;
+            }
+            
+            .chefes-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .text-muted {
+            color: #6c757d !important;
+            font-size: 12px;
+        }
+        
+        .mt-2 {
+            margin-top: 10px;
+        }
+        
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+        
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Input file personalizado */
+        .file-input-container {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+        
+        .file-input {
+            position: absolute;
+            left: -9999px;
+        }
+        
+        .file-input-label {
+            display: block;
+            padding: 10px 15px;
+            background-color: var(--primary);
+            color: white;
+            border-radius: 5px;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .file-input-label:hover {
+            background-color: var(--secondary);
+        }
+        
+        .file-name {
+            margin-top: 5px;
+            font-size: 12px;
+            color: var(--gray);
+            text-align: center;
+        }
+
+        /* Loading overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            flex-direction: column;
+        }
+        
+        .loading-overlay .loading {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
-    <!-- COLE AQUI TODO O HTML DO SEU ARQUIVO ORIGINAL -->
-    
-    <script src="./script.js"></script>
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+        <div class="loading"></div>
+        <div>Carregando dados...</div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <!-- Logotipo removido -->
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="#" class="active" data-page="organograma"><i class="fas fa-sitemap"></i> <span>Organograma</span></a></li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="logo-texto">
+                <img src="https://i.postimg.cc/DyKZTbYq/Logotipo.jpg" alt="AGETRHA Logo">
+                <strong>DEP. PESSOAL E QUADROS - AGETRHA</strong>
+            </div>
+            <div class="user-info">
+                <img id="presidentPhoto" src="https://drive.google.com/thumbnail?id=1c38dXZUgqkgRKxkvI28phzKtGgaqVCov&sz=w400" class="org-photo" alt="Geraldina Francisco">
+                <div>
+                    <div style="font-weight: 600;">Geraldina Francisco</div>
+                    <div style="font-size: 12px; color: var(--gray);">Presidente</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content Area -->
+        <div class="content">
+            <!-- Organograma Content -->
+            <div id="organograma-content" style="display: block;">
+                <div class="page-title">
+                    <h1><i class="fas fa-sitemap"></i> Organograma</h1>
+                    <div>
+                        <button class="btn btn-primary" id="btn-ver-chefes"><i class="fas fa-users"></i> Ver todos os chefes</button>
+                        <button class="btn btn-success" id="btn-adicionar-cargo"><i class="fas fa-plus"></i> Adicionar Cargo</button>
+                        <button class="btn btn-primary" id="btn-exportar-organograma"><i class="fas fa-download"></i> Exportar</button>
+                    </div>
+                </div>
+
+                <div class="organograma-container">
+                    <div class="organograma">
+                        <!-- Assembleia Geral -->
+                        <div class="org-section-title">ASSEMBLEIA GERAL</div>
+                        <div class="org-level">
+                            <div class="org-card" data-position="presidente-assembleia">
+                                <img class="org-photo placeholder" src="" alt="">
+                                <div class="org-name">Presidente</div>
+                                <div class="org-position">Presidente da Assembleia Geral</div>
+                                <div class="org-member-id">Nº: <span class="member-id"></span></div>
+                                <div class="org-actions">
+                                    <button class="org-action-btn edit" onclick="editarCargo('presidente-assembleia')"><i class="fas fa-edit"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="org-level">
+                            <div class="org-card" data-position="primeiro-vogal-assembleia">
+                                <img class="org-photo placeholder" src="" alt="">
+                                <div class="org-name">1° Vogal</div>
+                                <div class="org-position">1° Vogal da Assembleia Geral</div>
+                                <div class="org-member-id">Nº: <span class="member-id"></span></div>
+                                <div class="org-actions">
+                                    <button class="org-action-btn edit" onclick="editarCargo('primeiro-vogal-assembleia')"><i class="fas fa-edit"></i></button>
+                                </div>
+                            </div>
+                            <div class="org-card" data-position="segundo-vogal-assembleia">
+                                <img class="org-photo placeholder" src="" alt="">
+                                <div class="org-name">2° Vogal</div>
+                                <div class="org-position">2° Vogal da Assembleia Geral</div>
+                                <div class="org-member-id">Nº: <span class="member-id"></span></div>
+                                <div class="org-actions">
+                                    <button class="org-action-btn edit" onclick="editarCargo('segundo-vogal-assembleia')"><i class="fas fa-edit"></i></button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Direção Nacional -->
+                        <div class="org-section-title">DIREÇÃO NACIONAL</div>
+                        <div class="org-departamento">
+                            <div class="org-hierarchy">
+                                <div class="org-hierarchy-level">
+                                    <div class="org-card" data-position="presidente-nacional">
+                                        <img class="org-photo" src="https://drive.google.com/thumbnail?id=1c38dXZUgqkgRKxkvI28phzKtGgaqVCov&sz=w400" alt="Geraldina Francisco">
+                                        <div class="org-name">Presidente Nacional</div>
+                                        <div class="org-position">Presidente Nacional</div>
+                                        <div class="org-member-id">Nº: <span class="member-id"></span></div>
+                                        <div class="org-actions">
+                                            <button class="org-action-btn edit" onclick="editarCargo('presidente-nacional')"><i class="fas fa-edit"></i></button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="org-hierarchy-level">
+                                    <div class="org-card" data-position="vice-presidente-nacional">
+                                        <img class="org-photo placeholder" src="" alt="">
+                                        <div class="org-name">Vice Presidente Nacional</div>
+                                        <div class="org-position">Vice Presidente Nacional</div>
+                                        <div class="org-member-id">Nº: <span class="member-id"></span></div>
+                                        <div class="org-actions">
+                                            <button class="org-action-btn edit" onclick="editarCargo('vice-presidente-nacional')"><i class="fas fa-edit"></i></button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="org-hierarchy-level">
+                                    <div class="org-card" data-position="secretario-presidencia">
+                                        <img class="org-photo" src="https://drive.google.com/thumbnail?id=1c38dXZUgqkgRKxkvI28phzKtGgaqVCov&sz=w400" alt="Afonso Wanana Rodrigues">
+                                        <div class="org-name">Secretário da Presidência</div>
+                                        <div class="org-position">Secretário da Presidência</div>
+                                        <div class="org-member-id">Nº: <span class="member-id"></span></div>
+                                        <div class="org-actions">
+                                            <button class="org-action-btn edit" onclick="editarCargo('secretario-presidencia')"><i class="fas fa-edit"></i></button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Resto do organograma permanece igual -->
+                        <!-- Secretaria Geral -->
+                        <div class="org-section-title">SECRETARIA GERAL</div>
+                        <div class="org-level">
+                            <div class="org-card" data-position="primeiro-secretario">
+                                <img class="org-photo placeholder" src="" alt="">
+                                <div class="org-name">1° Secretário</div>
+                                <div class="org-position">1° Secretário</div>
+                                <div class="org-member-id">Nº: <span class="member-id"></span></div>
+                                <div class="org-actions">
+                                    <button class="org-action-btn edit" onclick="editarCargo('primeiro-secretario')"><i class="fas fa-edit"></i></button>
+                                </div>
+                            </div>
+                            <div class="org-card" data-position="segundo-secretario">
+                                <img class="org-photo placeholder" src="" alt="">
+                                <div class="org-name">2° Secretário</div>
+                                <div class="org-position">2° Secretário</div>
+                                <div class="org-member-id">Nº: <span class="member-id"></span></div>
+                                <div class="org-actions">
+                                    <button class="org-action-btn edit" onclick="editarCargo('segundo-secretario')"><i class="fas fa-edit"></i></button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Conselho Fiscal -->
+                        <div class="org-section-title">CONSELHO FISCAL</div>
+                        <div class="org-departamento">
+                            <div class="org-hierarchy">
+                                <div class="org-hierarchy-level">
+                                    <div class="org-card" data-position="presidente-fiscal">
+                                        <img class="org-photo placeholder" src="" alt="">
+                                        <div class="org-name">Presidente</div>
+                                        <div class="org-position">Presidente do Conselho Fiscal</div>
+                                        <div class="org-member-id">Nº: <span class="member-id"></span></div>
+                                        <div class="org-actions">
+                                            <button class="org-action-btn edit" onclick="editarCargo('presidente-fiscal')"><i class="fas fa-edit"></i></button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="org-hierarchy-level">
+                                    <div class="org-card" data-position="secretario-fiscal">
+                                        <img class="org-photo placeholder" src="" alt="">
+                                        <div class="org-name">Secretário</div>
+                                        <div class="org-position">Secretário do Conselho Fiscal</div>
+                                        <div class="org-member-id">Nº: <span class="member-id"></span></div>
+                                        <div class="org-actions">
+                                            <button class="org-action-btn edit" onclick="editarCargo('secretario-fiscal')"><i class="fas fa-edit"></i></button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="org-hierarchy-level multiple">
+                                    <div class="org-card" data-position="primeiro-vogal-fiscal">
+                                        <img class="org-photo placeholder" src="" alt="">
+                                        <div class="org-name">1° Vogal</div>
+                                        <div class="org-position">1° Vogal do Conselho Fiscal</div>
+                                        <div class="org-member-id">Nº: <span class="member-id"></span></div>
+                                        <div class="org-actions">
+                                            <button class="org-action-btn edit" onclick="editarCargo('primeiro-vogal-fiscal')"><i class="fas fa-edit"></i></button>
+                                        </div>
+                                    </div>
+                                    <div class="org-card" data-position="segundo-vogal-fiscal">
+                                        <img class="org-photo placeholder" src="" alt="">
+                                        <div class="org-name">2° Vogal</div>
+                                        <div class="org-position">2° Vogal do Conselho Fiscal</div>
+                                        <div class="org-member-id">Nº: <span class="member-id"></span></div>
+                                        <div class="org-actions">
+                                            <button class="org-action-btn edit" onclick="editarCargo('segundo-vogal-fiscal')"><i class="fas fa-edit"></i></button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Conselho Consultivo -->
+                        <div class="org-section-title">CONSELHO CONSULTIVO</div>
+                        <div class="org-level">
+                            <div class="org-card" data-position="primeiro-conselheiro">
+                                <img class="org-photo placeholder" src="" alt="">
+                                <div class="org-name">1° Conselheiro(a)</div>
+                                <div class="org-position">1° Conselheiro(a) Consultivo</div>
+                                <div class="org-member-id">Nº: <span class="member-id"></span></div>
+                                <div class="org-actions">
+                                    <button class="org-action-btn edit" onclick="editarCargo('primeiro-conselheiro')"><i class="fas fa-edit"></i></button>
+                                </div>
+                            </div>
+                            <div class="org-card" data-position="segundo-conselheiro">
+                                <img class="org-photo placeholder" src="" alt="">
+                                <div class="org-name">2° Conselheiro(a)</div>
+                                <div class="org-position">2° Conselheiro(a) Consultivo</div>
+                                <div class="org-member-id">Nº: <span class="member-id"></span></div>
+                                <div class="org-actions">
+                                    <button class="org-action-btn edit" onclick="editarCargo('segundo-conselheiro')"><i class="fas fa-edit"></i></button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Botão para ver departamentos -->
+                        <div class="toggle-departamentos">
+                            <button class="btn btn-primary" id="btn-ver-departamentos">
+                                <i class="fas fa-chevron-down"></i> VER DEPARTAMENTOS
+                            </button>
+                        </div>
+
+                        <!-- Departamentos (inicialmente ocultos) -->
+                        <div id="departamentos-container" style="display: none;">
+                            <!-- Departamento de Planejamento e Finanças -->
+                            <div class="org-departamento">
+                                <div class="org-section-title">DEPARTAMENTO DE PLANEJAMENTO E FINANÇAS</div>
+                                <div class="org-hierarchy">
+                                    <div class="org-hierarchy-level">
+                                        <div class="org-card" data-position="coordenador-financeiro">
+                                            <img class="org-photo placeholder" src="" alt="">
+                                            <div class="org-name">Coordenador Financeiro</div>
+                                            <div class="org-position">Coordenador Financeiro</div>
+                                            <div class="org-member-id">Nº: <span class="member-id"></span></div>
+                                            <div class="org-actions">
+                                                <button class="org-action-btn edit" onclick="editarCargo('coordenador-financeiro')"><i class="fas fa-edit"></i></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="org-hierarchy-level">
+                                        <div class="org-card" data-position="auxiliar-financeiro">
+                                            <img class="org-photo placeholder" src="" alt="">
+                                            <div class="org-name">Auxiliar Financeiro</div>
+                                            <div class="org-position">Auxiliar Financeiro</div>
+                                            <div class="org-member-id">Nº: <span class="member-id"></span></div>
+                                            <div class="org-actions">
+                                                <button class="org-action-btn edit" onclick="editarCargo('auxiliar-financeiro')"><i class="fas fa-edit"></i></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Departamento Jurídico -->
+                            <div class="org-departamento">
+                                <div class="org-section-title">DEPARTAMENTO JURÍDICO</div>
+                                <div class="org-hierarchy">
+                                    <div class="org-hierarchy-level">
+                                        <div class="org-card" data-position="chefe-departamento-juridico">
+                                            <img class="org-photo placeholder" src="" alt="">
+                                            <div class="org-name">Chefe de Departamento</div>
+                                            <div class="org-position">Chefe do Departamento Jurídico</div>
+                                            <div class="org-member-id">Nº: <span class="member-id"></span></div>
+                                            <div class="org-actions">
+                                                <button class="org-action-btn edit" onclick="editarCargo('chefe-departamento-juridico')"><i class="fas fa-edit"></i></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="org-hierarchy-level">
+                                        <div class="org-card" data-position="jurista">
+                                            <img class="org-photo placeholder" src="" alt="">
+                                            <div class="org-name">Jurista</div>
+                                            <div class="org-position">Jurista</div>
+                                            <div class="org-member-id">Nº: <span class="member-id"></span></div>
+                                            <div class="org-actions">
+                                                <button class="org-action-btn edit" onclick="editarCargo('jurista')"><i class="fas fa-edit"></i></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Departamento de Pessoal e Quadros -->
+                            <div class="org-departamento">
+                                <div class="org-section-title">DEPARTAMENTO DE PESSOAL E QUADROS</div>
+                                <div class="org-hierarchy">
+                                    <div class="org-hierarchy-level">
+                                        <div class="org-card" data-position="chefe-departamento-quadros">
+                                            <img class="org-photo placeholder" src="" alt="">
+                                            <div class="org-name">Chefe de Departamento</div>
+                                            <div class="org-position">Chefe do Departamento de Pessoal e Quadros</div>
+                                            <div class="org-member-id">Nº: <span class="member-id"></span></div>
+                                            <div class="org-actions">
+                                                <button class="org-action-btn edit" onclick="editarCargo('chefe-departamento-quadros')"><i class="fas fa-edit"></i></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="org-hierarchy-level">
+                                        <div class="org-card" data-position="chefe-seccao-quadros">
+                                            <img class="org-photo placeholder" src="" alt="">
+                                            <div class="org-name">Chefe de Secção</div>
+                                            <div class="org-position">Chefe de Secção</div>
+                                            <div class="org-member-id">Nº: <span class="member-id"></span></div>
+                                            <div class="org-actions">
+                                                <button class="org-action-btn edit" onclick="editarCargo('chefe-seccao-quadros')"><i class="fas fa-edit"></i></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="org-hierarchy-level">
+                                        <div class="org-card" data-position="tecnico-rh">
+                                            <img class="org-photo placeholder" src="" alt="">
+                                            <div class="org-name">Técnico de Recursos Humanos</div>
+                                            <div class="org-position">Técnico de Recursos Humanos</div>
+                                            <div class="org-member-id">Nº: <span class="member-id"></span></div>
+                                            <div class="org-actions">
+                                                <button class="org-action-btn edit" onclick="editarCargo('tecnico-rh')"><i class="fas fa-edit"></i></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Departamento de Comunicação Institucional e Imprensa -->
+                            <div class="org-departamento">
+                                <div class="org-section-title">DEPARTAMENTO DE COMUNICAÇÃO INSTITUCIONAL E IMPRENSA</div>
+                                <div class="org-hierarchy">
+                                    <div class="org-hierarchy-level">
+                                        <div class="org-card" data-position="chefe-departamento-comunicacao">
+                                            <img class="org-photo placeholder" src="" alt="">
+                                            <div class="org-name">Chefe de Departamento</div>
+                                            <div class="org-position">Chefe do Departamento de Comunicação</div>
+                                            <div class="org-member-id">Nº: <span class="member-id"></span></div>
+                                            <div class="org-actions">
+                                                <button class="org-action-btn edit" onclick="editarCargo('chefe-departamento-comunicacao')"><i class="fas fa-edit"></i></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="org-hierarchy-level multiple">
+                                        <div class="org-card" data-position="gestor-redes">
+                                            <img class="org-photo placeholder" src="" alt="">
+                                            <div class="org-name">Gestor de Mídias Sociais</div>
+                                            <div class="org-position">Gestor de Mídias Sociais</div>
+                                            <div class="org-member-id">Nº: <span class="member-id"></span></div>
+                                            <div class="org-actions">
+                                                <button class="org-action-btn edit" onclick="editarCargo('gestor-redes')"><i class="fas fa-edit"></i></button>
+                                            </div>
+                                        </div>
+                                        <div class="org-card" data-position="assessor-comunicacao">
+                                            <img class="org-photo placeholder" src="" alt="">
+                                            <div class="org-name">Assessor de Comunicação</div>
+                                            <div class="org-position">Assessor de Comunicação</div>
+                                            <div class="org-member-id">Nº: <span class="member-id"></span></div>
+                                            <div class="org-actions">
+                                                <button class="org-action-btn edit" onclick="editarCargo('assessor-comunicacao')"><i class="fas fa-edit"></i></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Departamento de Intercâmbio e Cooperação -->
+                            <div class="org-departamento">
+                                <div class="org-section-title">DEPARTAMENTO DE INTERCÂMBIO E COOPERAÇÃO</div>
+                                <div class="org-hierarchy">
+                                    <div class="org-hierarchy-level">
+                                        <div class="org-card" data-position="chefe-departamento-cooperacao">
+                                            <img class="org-photo placeholder" src="" alt="">
+                                            <div class="org-name">UMBELINO CLEMENTE</div>
+                                            <div class="org-position">CHEFE DO DEPARTAMENTO</div>
+                                            <div class="org-member-id">Nº: <span class="member-id">12345</span></div>
+                                            <div class="org-actions">
+                                                <button class="org-action-btn edit" onclick="editarCargo('chefe-departamento-cooperacao')"><i class="fas fa-edit"></i></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="org-hierarchy-level">
+                                        <div class="org-card" data-position="chefe-seccao-cooperacao">
+                                            <img class="org-photo placeholder" src="" alt="">
+                                            <div class="org-name">JEREMIAS JERÔNIMO</div>
+                                            <div class="org-position">CHEFE DE SECÇÃO</div>
+                                            <div class="org-member-id">Nº: <span class="member-id">12346</span></div>
+                                            <div class="org-actions">
+                                                <button class="org-action-btn edit" onclick="editarCargo('chefe-seccao-cooperacao')"><i class="fas fa-edit"></i></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="org-hierarchy-level multiple">
+                                        <div class="org-card" data-position="tecnico1-cooperacao">
+                                            <img class="org-photo placeholder" src="" alt="">
+                                            <div class="org-name">PEDRO GASPAR</div>
+                                            <div class="org-position">TÉCNICO 1</div>
+                                            <div class="org-member-id">Nº: <span class="member-id">12347</span></div>
+                                            <div class="org-actions">
+                                                <button class="org-action-btn edit" onclick="editarCargo('tecnico1-cooperacao')"><i class="fas fa-edit"></i></button>
+                                            </div>
+                                        </div>
+                                        <div class="org-card" data-position="tecnico2-cooperacao">
+                                            <img class="org-photo placeholder" src="" alt="">
+                                            <div class="org-name">TÉCNICO 2</div>
+                                            <div class="org-position">TÉCNICO 2</div>
+                                            <div class="org-member-id">Nº: <span class="member-id">---</span></div>
+                                            <div class="org-actions">
+                                                <button class="org-action-btn edit" onclick="editarCargo('tecnico2-cooperacao')"><i class="fas fa-edit"></i></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Departamento de Formação e Estudos Científicos -->
+                            <div class="org-departamento">
+                                <div class="org-section-title">DEPARTAMENTO DE FORMAÇÃO E ESTUDOS CIENTÍFICOS</div>
+                                <div class="org-hierarchy">
+                                    <div class="org-hierarchy-level">
+                                        <div class="org-card" data-position="chefe-departamento-formacao">
+                                            <img class="org-photo placeholder" src="" alt="">
+                                            <div class="org-name">Chefe de Departamento</div>
+                                            <div class="org-position">Chefe do Departamento de Formação</div>
+                                            <div class="org-member-id">Nº: <span class="member-id"></span></div>
+                                            <div class="org-actions">
+                                                <button class="org-action-btn edit" onclick="editarCargo('chefe-departamento-formacao')"><i class="fas fa-edit"></i></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="org-hierarchy-level">
+                                        <div class="org-card" data-position="pedagogico">
+                                            <img class="org-photo placeholder" src="" alt="">
+                                            <div class="org-name">Pedagógico</div>
+                                            <div class="org-position">Pedagógico</div>
+                                            <div class="org-member-id">Nº: <span class="member-id"></span></div>
+                                            <div class="org-actions">
+                                                <button class="org-action-btn edit" onclick="editarCargo('pedagogico')"><i class="fas fa-edit"></i></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Departamento Regional ou Provincial -->
+                            <div class="org-departamento">
+                                <div class="org-section-title">DEPARTAMENTO REGIONAL OU PROVINCIAL</div>
+                                <div class="org-hierarchy">
+                                    <div class="org-hierarchy-level">
+                                        <div class="org-card" data-position="chefe-departamento-regional">
+                                            <img class="org-photo placeholder" src="" alt="">
+                                            <div class="org-name">Chefe de Departamento</div>
+                                            <div class="org-position">Chefe do Departamento Regional</div>
+                                            <div class="org-member-id">Nº: <span class="member-id"></span></div>
+                                            <div class="org-actions">
+                                                <button class="org-action-btn edit" onclick="editarCargo('chefe-departamento-regional')"><i class="fas fa-edit"></i></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="org-hierarchy-level">
+                                        <div class="org-card" data-position="chefe-seccao-regional">
+                                            <img class="org-photo placeholder" src="" alt="">
+                                            <div class="org-name">Chefe de Secção</div>
+                                            <div class="org-position">Chefe de Secção</div>
+                                            <div class="org-member-id">Nº: <span class="member-id"></span></div>
+                                            <div class="org-actions">
+                                                <button class="org-action-btn edit" onclick="editarCargo('chefe-seccao-regional')"><i class="fas fa-edit"></i></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="org-hierarchy-level">
+                                        <div class="org-card" data-position="tecnico-regional">
+                                            <img class="org-photo placeholder" src="" alt="">
+                                            <div class="org-name">Técnico</div>
+                                            <div class="org-position">Técnico</div>
+                                            <div class="org-member-id">Nº: <span class="member-id"></span></div>
+                                            <div class="org-actions">
+                                                <button class="org-action-btn edit" onclick="editarCargo('tecnico-regional')"><i class="fas fa-edit"></i></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Departamento de Conduta e Disciplina -->
+                            <div class="org-departamento">
+                                <div class="org-section-title">DEPARTAMENTO DE CONDUTA E DISCIPLINA</div>
+                                <div class="org-hierarchy">
+                                    <div class="org-hierarchy-level">
+                                        <div class="org-card" data-position="chefe-departamento-conduta">
+                                            <img class="org-photo placeholder" src="" alt="">
+                                            <div class="org-name">Chefe de Departamento</div>
+                                            <div class="org-position">Chefe do Departamento de Conduta</div>
+                                            <div class="org-member-id">Nº: <span class="member-id"></span></div>
+                                            <div class="org-actions">
+                                                <button class="org-action-btn edit" onclick="editarCargo('chefe-departamento-conduta')"><i class="fas fa-edit"></i></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="org-hierarchy-level multiple">
+                                        <div class="org-card" data-position="conselheira">
+                                            <img class="org-photo placeholder" src="" alt="">
+                                            <div class="org-name">Conselheira</div>
+                                            <div class="org-position">Conselheira</div>
+                                            <div class="org-member-id">Nº: <span class="member-id"></span></div>
+                                            <div class="org-actions">
+                                                <button class="org-action-btn edit" onclick="editarCargo('conselheira')"><i class="fas fa-edit"></i></button>
+                                            </div>
+                                        </div>
+                                        <div class="org-card" data-position="analista-conduta">
+                                            <img class="org-photo placeholder" src="" alt="">
+                                            <div class="org-name">Analista</div>
+                                            <div class="org-position">Analista</div>
+                                            <div class="org-member-id">Nº: <span class="member-id"></span></div>
+                                            <div class="org-actions">
+                                                <button class="org-action-btn edit" onclick="editarCargo('analista-conduta')"><i class="fas fa-edit"></i></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seção de Chefes -->
+            <div id="chefes-content" class="chefes-container">
+                <div class="page-title">
+                    <h1><i class="fas fa-users"></i> Todos os Chefes</h1>
+                    <button class="btn btn-primary" id="btn-voltar-organograma">
+                        <i class="fas fa-arrow-left"></i> Voltar ao Organograma
+                    </button>
+                </div>
+                
+                <div class="chefes-grid" id="chefes-grid">
+                    <!-- Os chefes serão carregados dinamicamente aqui -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Editar Cargo (Organograma) -->
+    <div id="modal-cargo" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-titulo-cargo">Editar Cargo</h2>
+                <button id="btn-fechar-modal-cargo" style="background: none; border: none; font-size: 20px; cursor: pointer;">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="form-cargo">
+                    <input type="hidden" id="cargo-id">
+                    
+                    <div class="form-group" style="text-align: center;">
+                        <div id="photo-preview-container">
+                            <img id="photo-preview" src="" class="photo-preview placeholder" alt="Pré-visualização da foto">
+                        </div>
+                        <div class="file-input-container">
+                            <input type="file" id="foto-input" class="file-input" accept="image/*">
+                            <label for="foto-input" class="file-input-label">
+                                <i class="fas fa-upload"></i> Carregar Foto
+                            </label>
+                            <div id="file-name" class="file-name">Nenhum ficheiro selecionado</div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="nome-cargo">Nome Completo *</label>
+                        <select id="nome-cargo" class="form-control" required>
+                            <option value="">Selecione um membro...</option>
+                            <!-- As opções serão carregadas dinamicamente da planilha -->
+                        </select>
+                        <div id="loading-membros" class="text-muted" style="display: none;">
+                            <div class="loading"></div> Carregando membros...
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="cargo">Cargo</label>
+                        <input type="text" id="cargo" class="form-control" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="numero-membro-cargo">Número de Membro</label>
+                        <input type="text" id="numero-membro-cargo" class="form-control" readonly>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn" id="btn-cancelar-cargo">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="btn-salvar-cargo">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Adicionar Novo Cargo -->
+    <div id="modal-novo-cargo" class="modal">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <h2>Adicionar Novo Cargo</h2>
+                <button id="btn-fechar-modal-novo-cargo" style="background: none; border: none; font-size: 20px; cursor: pointer;">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="form-novo-cargo">
+                    <div class="form-group">
+                        <label for="novo-nome-cargo">Nome do Cargo *</label>
+                        <input type="text" id="novo-nome-cargo" class="form-control" placeholder="Ex: Coordenador de Marketing" required>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="novo-departamento-cargo">Departamento *</label>
+                            <select id="novo-departamento-cargo" class="form-control" required>
+                                <option value="">Selecione um departamento</option>
+                                <option value="assembleia-geral">Assembleia Geral</option>
+                                <option value="direcao-nacional">Direção Nacional</option>
+                                <option value="secretaria-geral">Secretaria Geral</option>
+                                <option value="conselho-fiscal">Conselho Fiscal</option>
+                                <option value="conselho-consultivo">Conselho Consultivo</option>
+                                <option value="planejamento-financas">Planejamento e Finanças</option>
+                                <option value="juridico">Jurídico</option>
+                                <option value="quadros-pessoal">Quadros e Pessoal</option>
+                                <option value="comunicacao-imprensa">Comunicação Institucional e Imprensa</option>
+                                <option value="cooperacao-intercambio">Cooperação e Intercâmbio</option>
+                                <option value="formacao-estudos">Formação e Estudos Científicos</option>
+                                <option value="regional-provincial">Regional ou Provincial</option>
+                                <option value="conduta-disciplina">Conduta e Disciplina</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="novo-posicao-cargo">Posição no Departamento *</label>
+                            <select id="novo-posicao-cargo" class="form-control" required>
+                                <option value="">Selecione a posição</option>
+                                <option value="acima">Acima (Superior)</option>
+                                <option value="abaixo">Abaixo (Subordinado)</option>
+                                <option value="mesmo-nivel">Mesmo Nível (Colega)</option>
+                                <option value="primeiro">Primeiro Cargo do Departamento</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="novo-descricao-cargo">Descrição do Cargo</label>
+                        <textarea id="novo-descricao-cargo" class="form-control" rows="3" placeholder="Descreva as responsabilidades deste cargo"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="novo-nivel-hierarquia">Nível de Hierarquia</label>
+                        <select id="novo-nivel-hierarquia" class="form-control">
+                            <option value="1">Nível 1 (Direção)</option>
+                            <option value="2">Nível 2 (Coordenação)</option>
+                            <option value="3">Nível 3 (Técnico)</option>
+                            <option value="4">Nível 4 (Auxiliar)</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn" id="btn-cancelar-novo-cargo">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="btn-salvar-novo-cargo">Adicionar Cargo</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // URL do Google Apps Script para carregar membros
+        const MEMBROS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwkAAbyTFC8wvyd3RozC6eXzu36VPbTvy9g02Sj4058eRl0SZZRlmRtjoQOscJ_fek1kA/exec';
+        
+        // Dados do organograma
+        let organograma = JSON.parse(localStorage.getItem('organograma')) || {};
+        let cargoAtual = '';
+        let listaMembros = []; // Array para armazenar a lista de membros da planilha
+        let fotoTemp = null; // Variável temporária para armazenar a foto antes de salvar
+
+        // ======= FUNÇÕES AUXILIARES =======
+        
+        // Função para mostrar/ocultar loading
+        function showLoading(show) {
+            document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none';
+        }
+
+        // Função para atualizar o dropdown de nomes no modal
+        function atualizarDropdownNomes() {
+            const selectNome = document.getElementById('nome-cargo');
+            
+            if (!selectNome) return;
+            
+            // Salvar a seleção atual
+            const selecaoAtual = selectNome.value;
+            
+            // Limpar opções existentes (exceto a primeira)
+            while (selectNome.children.length > 1) {
+                selectNome.removeChild(selectNome.lastChild);
+            }
+            
+            // Adicionar cada membro ao select
+            listaMembros.forEach(membro => {
+                // Verificar a estrutura dos dados
+                let numeroMembro, nome;
+                
+                if (typeof membro === 'object') {
+                    // Se for um objeto {numeroMembro: '001', nome: 'Nome'}
+                    numeroMembro = membro.numeroMembro || '';
+                    nome = membro.nome || '';
+                } else if (Array.isArray(membro)) {
+                    // Se for um array [numeroMembro, nome]
+                    numeroMembro = membro[0] || '';
+                    nome = membro[1] || '';
+                } else {
+                    console.warn('Formato de membro desconhecido:', membro);
+                    return;
+                }
+                
+                if (nome && nome.trim() !== '') {
+                    const option = document.createElement('option');
+                    option.value = nome;
+                    option.textContent = nome;
+                    option.setAttribute('data-numero-membro', numeroMembro);
+                    selectNome.appendChild(option);
+                }
+            });
+            
+            // Restaurar a seleção anterior se ainda existir
+            if (selecaoAtual) {
+                selectNome.value = selecaoAtual;
+            }
+            
+            console.log('Dropdown atualizado com', listaMembros.length, 'membros');
+        }
+
+        // Função de fallback para carregar membros caso a API falhe
+        function carregarMembrosFallback() {
+            console.log('Usando dados de fallback para membros...');
+            
+            // Dados de exemplo para fallback
+            listaMembros = [
+                { numeroMembro: '001', nome: 'GERALDINA FRANCISCO' },
+                { numeroMembro: '002', nome: 'AFONSO WANANA RODRIGUES' },
+                { numeroMembro: '003', nome: 'UMBELINO CLEMENTE' },
+                { numeroMembro: '004', nome: 'JEREMIAS JERÔNIMO' },
+                { numeroMembro: '005', nome: 'PEDRO GASPAR' },
+                { numeroMembro: '006', nome: 'MARIA SILVA' },
+                { numeroMembro: '007', nome: 'JOÃO SANTOS' }
+            ];
+            
+            atualizarDropdownNomes();
+        }
+
+        // ======= FUNÇÕES PRINCIPAIS =======
+
+        // Função para carregar membros da planilha
+        async function carregarMembros() {
+            try {
+                console.log('Carregando membros da planilha...');
+                document.getElementById('loading-membros').style.display = 'block';
+                
+                // Usar o endpoint correto do Google Apps Script
+                const timestamp = new Date().getTime();
+                const response = await fetch(`${MEMBROS_SCRIPT_URL}?action=getMembers&t=${timestamp}`);
+                
+                if (!response.ok) {
+                    throw new Error(`Erro HTTP: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                console.log('Resposta completa da planilha:', result);
+                
+                if (result.success && result.members) {
+                    listaMembros = result.members;
+                    console.log(`${listaMembros.length} membros carregados da planilha`);
+                    
+                    // Atualizar o dropdown de nomes
+                    atualizarDropdownNomes();
+                    
+                    document.getElementById('loading-membros').style.display = 'none';
+                    return listaMembros;
+                } else {
+                    console.warn('Formato de dados inesperado ou erro:', result);
+                    document.getElementById('loading-membros').style.display = 'none';
+                    // Tentar carregar dados de fallback
+                    carregarMembrosFallback();
+                    return [];
+                }
+            } catch (error) {
+                console.error('Erro ao carregar membros:', error);
+                document.getElementById('loading-membros').style.display = 'none';
+                // Tentar carregar dados de fallback
+                carregarMembrosFallback();
+                return [];
+            }
+        }
+
+        // Função para carregar foto da presidente
+        function loadPresidentPhoto() {
+            const img = document.getElementById('presidentPhoto');
+            if (!img) return;
+            
+            // Usar a URL de thumbnail do Google Drive que funciona melhor
+            img.src = 'https://drive.google.com/thumbnail?id=1c38dXZUgqkgRKxkvI28phzKtGgaqVCov&sz=w400';
+            
+            img.onerror = function() {
+                console.log('Erro ao carregar foto da presidente, usando placeholder.');
+                this.src = '';
+                this.classList.add('placeholder');
+                this.innerHTML = '?';
+            };
+            
+            img.onload = function() {
+                console.log('Foto da presidente carregada com sucesso');
+                this.classList.remove('placeholder');
+            };
+        }
+
+        // Função para carregar dados do organograma
+        function carregarOrganograma() {
+            const cartoes = document.querySelectorAll('.org-card');
+            
+            cartoes.forEach(cartao => {
+                const posicao = cartao.getAttribute('data-position');
+                const dados = organograma[posicao] || {};
+                const img = cartao.querySelector('.org-photo');
+                
+                // Para presidente e secretário, usar as fotos específicas
+                if (posicao === 'presidente-nacional') {
+                    // Presidente usa a mesma foto do topbar
+                    img.src = 'https://drive.google.com/thumbnail?id=1c38dXZUgqkgRKxkvI28phzKtGgaqVCov&sz=w400';
+                    img.onerror = function() {
+                        this.src = '';
+                        this.classList.add('placeholder');
+                        this.innerHTML = '?';
+                    };
+                    img.onload = function() {
+                        this.classList.remove('placeholder');
+                    };
+                    img.classList.remove('placeholder');
+                    img.innerHTML = '';
+                } 
+                else if (posicao === 'secretario-presidencia') {
+                    // Secretário usa a mesma foto da presidente temporariamente
+                    // Você pode substituir por uma URL específica do Afonso quando tiver
+                    img.src = 'https://drive.google.com/thumbnail?id=1c38dXZUgqkgRKxkvI28phzKtGgaqVCov&sz=w400';
+                    img.onerror = function() {
+                        this.src = '';
+                        this.classList.add('placeholder');
+                        this.innerHTML = '?';
+                    };
+                    img.onload = function() {
+                        this.classList.remove('placeholder');
+                    };
+                    img.classList.remove('placeholder');
+                    img.innerHTML = '';
+                }
+                // Para outros cargos, usar a lógica normal
+                else if (dados.foto) {
+                    img.src = dados.foto;
+                    img.onerror = function() {
+                        this.src = '';
+                        this.classList.add('placeholder');
+                        this.innerHTML = '?';
+                    };
+                    img.onload = function() {
+                        this.classList.remove('placeholder');
+                    };
+                    img.classList.remove('placeholder');
+                    img.innerHTML = '';
+                } else {
+                    img.src = '';
+                    img.classList.add('placeholder');
+                    img.innerHTML = '?';
+                }
+                
+                // Atualizar nome
+                const nomeElement = cartao.querySelector('.org-name');
+                if (dados.nome) {
+                    nomeElement.textContent = dados.nome;
+                    cartao.classList.remove('vaga');
+                } else {
+                    nomeElement.textContent = 'Vaga disponível';
+                    cartao.classList.add('vaga');
+                }
+                
+                // Atualizar número de membro
+                const numeroElement = cartao.querySelector('.member-id');
+                if (dados.numeroMembro) {
+                    numeroElement.textContent = dados.numeroMembro;
+                } else {
+                    numeroElement.textContent = '---';
+                }
+            });
+        }
+
+        // Função para editar cargo
+        function editarCargo(posicao) {
+            cargoAtual = posicao;
+            const dados = organograma[posicao] || {};
+            const cartao = document.querySelector(`[data-position="${posicao}"]`);
+            const cargoNome = cartao.querySelector('.org-position').textContent;
+            
+            document.getElementById('modal-titulo-cargo').textContent = `Editar ${cargoNome}`;
+            document.getElementById('cargo').value = cargoNome;
+            
+            // Resetar a foto temporária e o input de arquivo
+            fotoTemp = null;
+            document.getElementById('foto-input').value = '';
+            document.getElementById('file-name').textContent = 'Nenhum ficheiro selecionado';
+            
+            // Configurar a pré-visualização da foto
+            const photoPreview = document.getElementById('photo-preview');
+            if (dados.foto) {
+                photoPreview.src = dados.foto;
+                photoPreview.classList.remove('placeholder');
+            } else {
+                photoPreview.src = '';
+                photoPreview.classList.add('placeholder');
+                photoPreview.innerHTML = '?';
+            }
+            
+            document.getElementById('nome-cargo').value = dados.nome || '';
+            document.getElementById('numero-membro-cargo').value = dados.numeroMembro || '';
+            
+            // Carregar membros se ainda não foram carregados
+            if (listaMembros.length === 0) {
+                carregarMembros();
+            } else {
+                atualizarDropdownNomes();
+            }
+            
+            document.getElementById('modal-cargo').style.display = 'flex';
+        }
+
+        // Função para salvar cargo
+        function salvarCargo() {
+            const nome = document.getElementById('nome-cargo').value;
+            const numeroMembro = document.getElementById('numero-membro-cargo').value;
+            
+            if (!nome.trim()) {
+                alert('O nome é obrigatório!');
+                return;
+            }
+            
+            // Para presidente e secretário, manter as fotos fixas
+            let novaFoto;
+            if (cargoAtual === 'presidente-nacional') {
+                novaFoto = 'https://drive.google.com/thumbnail?id=1c38dXZUgqkgRKxkvI28phzKtGgaqVCov&sz=w400';
+            } else if (cargoAtual === 'secretario-presidencia') {
+                novaFoto = 'https://drive.google.com/thumbnail?id=1c38dXZUgqkgRKxkvI28phzKtGgaqVCov&sz=w400';
+            } else {
+                // Para outros cargos, usar a lógica normal
+                const fotoAtual = organograma[cargoAtual] ? organograma[cargoAtual].foto : null;
+                novaFoto = fotoTemp !== null ? fotoTemp : fotoAtual;
+            }
+            
+            organograma[cargoAtual] = {
+                nome: nome,
+                numeroMembro: numeroMembro,
+                foto: novaFoto
+            };
+            
+            // Salvar no localStorage
+            localStorage.setItem('organograma', JSON.stringify(organograma));
+            
+            // Atualizar visualização
+            carregarOrganograma();
+            
+            // Se for a presidente, atualizar a foto na top-bar
+            if (cargoAtual === 'presidente-nacional') {
+                loadPresidentPhoto();
+            }
+            
+            // Fechar modal
+            fecharModalCargo();
+            
+            alert('Cargo atualizado com sucesso!');
+        }
+
+        // Função para fechar modal do cargo
+        function fecharModalCargo() {
+            document.getElementById('modal-cargo').style.display = 'none';
+            // Resetar a foto temporária
+            fotoTemp = null;
+        }
+
+        // Função para abrir modal de novo cargo
+        function abrirModalNovoCargo() {
+            document.getElementById('modal-novo-cargo').style.display = 'flex';
+        }
+
+        // Função para fechar modal de novo cargo
+        function fecharModalNovoCargo() {
+            document.getElementById('modal-novo-cargo').style.display = 'none';
+            document.getElementById('form-novo-cargo').reset();
+        }
+
+        // Função para salvar novo cargo
+        function salvarNovoCargo() {
+            const nomeCargo = document.getElementById('novo-nome-cargo').value;
+            const departamento = document.getElementById('novo-departamento-cargo').value;
+            const descricao = document.getElementById('novo-descricao-cargo').value;
+            
+            if (!nomeCargo.trim() || !departamento) {
+                alert('Nome do cargo e departamento são obrigatórios!');
+                return;
+            }
+            
+            // Em uma implementação real, aqui seria feita a lógica para adicionar o novo cargo
+            // Para este exemplo, apenas simularemos a adição
+            alert(`Novo cargo "${nomeCargo}" adicionado ao departamento ${departamento} com sucesso!`);
+            
+            // Fechar modal
+            fecharModalNovoCargo();
+        }
+
+        // Função para voltar ao organograma
+        function voltarAoOrganograma() {
+            document.getElementById('organograma-content').style.display = 'block';
+            document.getElementById('chefes-content').style.display = 'none';
+        }
+
+        // Função para mostrar todos os chefes (INCLUINDO TODOS OS CHEFES DE DEPARTAMENTOS)
+        function verTodosChefes() {
+            // Ocultar organograma e mostrar seção de chefes
+            document.getElementById('organograma-content').style.display = 'none';
+            document.getElementById('chefes-content').style.display = 'block';
+            
+            carregarChefes();
+        }
+
+        // Função para carregar a lista de chefes (INCLUINDO TODOS OS CHEFES DE DEPARTAMENTOS)
+        function carregarChefes() {
+            const chefesGrid = document.getElementById('chefes-grid');
+            chefesGrid.innerHTML = '';
+            
+            // Definir TODOS os cargos que são considerados "chefes" - LISTA COMPLETA
+            const cargosChefes = [
+                // Assembleia Geral
+                'presidente-assembleia',
+                'primeiro-vogal-assembleia', 
+                'segundo-vogal-assembleia',
+                
+                // Direção Nacional
+                'presidente-nacional',
+                'vice-presidente-nacional',
+                'secretario-presidencia',
+                
+                // Secretaria Geral
+                'primeiro-secretario',
+                'segundo-secretario',
+                
+                // Conselho Fiscal
+                'presidente-fiscal',
+                'secretario-fiscal',
+                'primeiro-vogal-fiscal',
+                'segundo-vogal-fiscal',
+                
+                // Conselho Consultivo
+                'primeiro-conselheiro',
+                'segundo-conselheiro',
+                
+                // Departamento de Planejamento e Finanças
+                'coordenador-financeiro',
+                'auxiliar-financeiro',
+                
+                // Departamento Jurídico
+                'chefe-departamento-juridico',
+                'jurista',
+                
+                // Departamento de Pessoal e Quadros
+                'chefe-departamento-quadros',
+                'chefe-seccao-quadros', 
+                'tecnico-rh',
+                
+                // Departamento de Comunicação
+                'chefe-departamento-comunicacao',
+                'gestor-redes',
+                'assessor-comunicacao',
+                
+                // Departamento de Intercâmbio e Cooperação
+                'chefe-departamento-cooperacao',
+                'chefe-seccao-cooperacao',
+                'tecnico1-cooperacao',
+                'tecnico2-cooperacao',
+                
+                // Departamento de Formação
+                'chefe-departamento-formacao',
+                'pedagogico',
+                
+                // Departamento Regional
+                'chefe-departamento-regional',
+                'chefe-seccao-regional',
+                'tecnico-regional',
+                
+                // Departamento de Conduta e Disciplina
+                'chefe-departamento-conduta',
+                'conselheira',
+                'analista-conduta'
+            ];
+            
+            cargosChefes.forEach(posicao => {
+                const cartao = document.querySelector(`[data-position="${posicao}"]`);
+                if (cartao) {
+                    const dados = organograma[posicao] || {};
+                    const nome = dados.nome || cartao.querySelector('.org-name').textContent;
+                    const cargo = cartao.querySelector('.org-position').textContent;
+                    const numeroMembro = dados.numeroMembro || cartao.querySelector('.member-id').textContent;
+                    const foto = dados.foto;
+                    
+                    // Determinar o departamento baseado na posição - LOGICA COMPLETA
+                    let departamento = 'Direção Nacional';
+                    
+                    if (posicao.includes('assembleia')) departamento = 'Assembleia Geral';
+                    else if (posicao.includes('fiscal')) departamento = 'Conselho Fiscal';
+                    else if (posicao.includes('consultivo') || posicao.includes('conselheiro')) departamento = 'Conselho Consultivo';
+                    else if (posicao.includes('secretario') && !posicao.includes('fiscal')) departamento = 'Secretaria Geral';
+                    else if (posicao.includes('financeiro')) departamento = 'Planejamento e Finanças';
+                    else if (posicao.includes('juridico')) departamento = 'Departamento Jurídico';
+                    else if (posicao.includes('quadros')) departamento = 'Pessoal e Quadros';
+                    else if (posicao.includes('comunicacao')) departamento = 'Comunicação Institucional';
+                    else if (posicao.includes('cooperacao')) departamento = 'Intercâmbio e Cooperação';
+                    else if (posicao.includes('formacao')) departamento = 'Formação e Estudos';
+                    else if (posicao.includes('regional')) departamento = 'Regional/Provincial';
+                    else if (posicao.includes('conduta')) departamento = 'Conduta e Disciplina';
+                    
+                    // Adicionar nível hierárquico se for chefe de secção
+                    if (posicao.includes('chefe-seccao')) {
+                        departamento += ' - Secção';
+                    }
+                    
+                    const chefeCard = document.createElement('div');
+                    chefeCard.className = 'chefe-card';
+                    
+                    // Construir a foto ou usar placeholder
+                    let fotoHTML = '';
+                    if (foto) {
+                        fotoHTML = `<img src="${foto}" class="chefe-photo" alt="Foto do ${nome}" onerror="this.classList.add('placeholder'); this.innerHTML='?'" onload="this.classList.remove('placeholder')">`;
+                    } else {
+                        fotoHTML = '<div class="chefe-photo placeholder">?</div>';
+                    }
+                    
+                    chefeCard.innerHTML = `
+                        ${fotoHTML}
+                        <div class="chefe-nome">${nome}</div>
+                        <div class="chefe-cargo">${cargo}</div>
+                        <div class="chefe-departamento">${departamento}</div>
+                        <div class="chefe-id">Nº: ${numeroMembro}</div>
+                        <div class="chefe-acoes" style="margin-top: 10px;">
+                            <button class="org-action-btn edit" onclick="editarCargo('${posicao}')" style="padding: 5px 10px; font-size: 12px;">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                        </div>
+                    `;
+                    
+                    chefesGrid.appendChild(chefeCard);
+                }
+            });
+            
+            // Se não encontrar nenhum chefe, mostrar mensagem
+            if (chefesGrid.children.length === 0) {
+                chefesGrid.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--gray);">
+                        <i class="fas fa-users" style="font-size: 48px; margin-bottom: 20px;"></i>
+                        <h3>Nenhum chefe encontrado</h3>
+                        <p>Adicione membros aos cargos para visualizar os chefes aqui.</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Função para exportar organograma como PDF
+        async function exportarOrganograma() {
+            try {
+                // Mostrar mensagem de processamento
+                const btnExportar = document.getElementById('btn-exportar-organograma');
+                const originalText = btnExportar.innerHTML;
+                btnExportar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Gerando PDF...';
+                btnExportar.disabled = true;
+                
+                const { jsPDF } = window.jspdf;
+                const organogramaContainer = document.querySelector('.organograma-container');
+                
+                // Usar html2canvas para capturar o organograma
+                const canvas = await html2canvas(organogramaContainer, {
+                    scale: 2, // Maior qualidade
+                    useCORS: true,
+                    logging: false,
+                    scrollX: 0,
+                    scrollY: -window.scrollY
+                });
+                
+                const imgData = canvas.toDataURL('image/png');
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const imgWidth = 190; // Largura A4 em mm (com margens)
+                const pageHeight = 280; // Altura A4 em mm (com margens)
+                const imgHeight = canvas.height * imgWidth / canvas.width;
+                
+                let heightLeft = imgHeight;
+                let position = 10; // Margem superior
+                
+                // Adicionar título
+                pdf.setFontSize(20);
+                pdf.setTextColor(26, 78, 142); // Cor primária
+                pdf.text('ORGANOGRAMA - AGETRHA', 105, 15, { align: 'center' });
+                
+                pdf.setFontSize(12);
+                pdf.setTextColor(100, 100, 100);
+                pdf.text('Departamento de Pessoal e Quadros', 105, 22, { align: 'center' });
+                
+                position = 30; // Começar após o título
+                
+                // Adicionar a imagem
+                pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+                heightLeft -= pageHeight;
+                
+                // Adicionar páginas adicionais se necessário
+                while (heightLeft >= 0) {
+                    position = heightLeft - imgHeight + 30;
+                    pdf.addPage();
+                    pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
+                }
+                
+                // Salvar o PDF
+                pdf.save('organograma-agetrha.pdf');
+                
+                // Restaurar botão
+                btnExportar.innerHTML = originalText;
+                btnExportar.disabled = false;
+                
+            } catch (error) {
+                console.error('Erro ao exportar PDF:', error);
+                alert('Erro ao exportar o organograma. Tente novamente.');
+                
+                // Restaurar botão em caso de erro
+                const btnExportar = document.getElementById('btn-exportar-organograma');
+                btnExportar.innerHTML = '<i class="fas fa-download"></i> Exportar';
+                btnExportar.disabled = false;
+            }
+        }
+
+        // Função para mostrar/ocultar departamentos
+        function toggleDepartamentos() {
+            const container = document.getElementById('departamentos-container');
+            const btn = document.getElementById('btn-ver-departamentos');
+            
+            if (container.style.display === 'none') {
+                container.style.display = 'block';
+                btn.innerHTML = '<i class="fas fa-chevron-up"></i> OCULTAR DEPARTAMENTOS';
+            } else {
+                container.style.display = 'none';
+                btn.innerHTML = '<i class="fas fa-chevron-down"></i> VER DEPARTAMENTOS';
+            }
+        }
+
+        // ======= FUNÇÕES PARA CARREGAR FOTOS =======
+        // Função para lidar com a seleção de arquivo
+        function setupFileInput() {
+            const fileInput = document.getElementById('foto-input');
+            const fileNameDisplay = document.getElementById('file-name');
+            const photoPreview = document.getElementById('photo-preview');
+            
+            fileInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    // Validar se é uma imagem
+                    if (!file.type.match('image.*')) {
+                        alert('Por favor, selecione um arquivo de imagem.');
+                        fileInput.value = '';
+                        fileNameDisplay.textContent = 'Nenhum ficheiro selecionado';
+                        return;
+                    }
+                    
+                    // Validar tamanho do arquivo (max 5MB)
+                    if (file.size > 5 * 1024 * 1024) {
+                        alert('A imagem é muito grande. Por favor, selecione uma imagem menor que 5MB.');
+                        fileInput.value = '';
+                        fileNameDisplay.textContent = 'Nenhum ficheiro selecionado';
+                        return;
+                    }
+                    
+                    fileNameDisplay.textContent = file.name;
+                    
+                    // Ler a imagem e converter para Data URL
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const dataURL = e.target.result;
+                        fotoTemp = dataURL;
+                        
+                        // Atualizar a pré-visualização
+                        photoPreview.src = dataURL;
+                        photoPreview.classList.remove('placeholder');
+                        photoPreview.innerHTML = '';
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    fileNameDisplay.textContent = 'Nenhum ficheiro selecionado';
+                    fotoTemp = null;
+                    
+                    // Restaurar a pré-visualização original
+                    const dados = organograma[cargoAtual] || {};
+                    if (dados.foto) {
+                        photoPreview.src = dados.foto;
+                        photoPreview.classList.remove('placeholder');
+                    } else {
+                        photoPreview.src = '';
+                        photoPreview.classList.add('placeholder');
+                        photoPreview.innerHTML = '?';
+                    }
+                }
+            });
+        }
+
+        // Função para atualizar o número de membro quando um nome é selecionado
+        function atualizarNumeroMembro() {
+            const selectNome = document.getElementById('nome-cargo');
+            const inputNumeroMembro = document.getElementById('numero-membro-cargo');
+            
+            const nomeSelecionado = selectNome.value;
+            const optionSelecionada = selectNome.options[selectNome.selectedIndex];
+            const numeroMembro = optionSelecionada.getAttribute('data-numero-membro') || '';
+            
+            inputNumeroMembro.value = numeroMembro;
+        }
+
+        // ======= INICIALIZAÇÃO =======
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            // Carregar foto da presidente
+            loadPresidentPhoto();
+            
+            // Carregar membros da planilha
+            carregarMembros();
+            
+            // Configurar o input de arquivo
+            setupFileInput();
+            
+            // Configurar event listeners do organograma
+            document.getElementById('btn-fechar-modal-cargo').addEventListener('click', fecharModalCargo);
+            document.getElementById('btn-cancelar-cargo').addEventListener('click', fecharModalCargo);
+            document.getElementById('btn-salvar-cargo').addEventListener('click', salvarCargo);
+            document.getElementById('btn-exportar-organograma').addEventListener('click', exportarOrganograma);
+            document.getElementById('btn-adicionar-cargo').addEventListener('click', abrirModalNovoCargo);
+            document.getElementById('btn-ver-chefes').addEventListener('click', verTodosChefes);
+            document.getElementById('btn-voltar-organograma').addEventListener('click', voltarAoOrganograma);
+            document.getElementById('btn-ver-departamentos').addEventListener('click', toggleDepartamentos);
+            
+            // Event listeners para modal de novo cargo
+            document.getElementById('btn-fechar-modal-novo-cargo').addEventListener('click', fecharModalNovoCargo);
+            document.getElementById('btn-cancelar-novo-cargo').addEventListener('click', fecharModalNovoCargo);
+            document.getElementById('btn-salvar-novo-cargo').addEventListener('click', salvarNovoCargo);
+            
+            // Atualizar número de membro quando um nome é selecionado
+            document.getElementById('nome-cargo').addEventListener('change', atualizarNumeroMembro);
+            
+            // Carregar organograma inicial
+            carregarOrganograma();
+        });
+    </script>
 </body>
 </html>
